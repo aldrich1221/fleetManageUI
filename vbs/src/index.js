@@ -1,8 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'react-app-polyfill/ie11'
+
+import 'react-app-polyfill/ie9'
+import 'react-app-polyfill/stable'
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+require("@babel/register")({
+  presets: [["@babel/preset-env"], ["@babel/preset-react"]],
+});
+ 
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
