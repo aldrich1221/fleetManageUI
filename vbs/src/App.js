@@ -24,9 +24,14 @@ import Plot from 'react-plotly.js';
 // import List from 'listr'
 // import { promisify } from 'util';
 ////////////////////////////////////////////////
+import Card from "@mui/material/Card";
+import Divider from "@mui/material/Divider";
+import Icon from "@mui/material/Icon";
+import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./assets/theme";
 import { ThemeProvider } from "@mui/material/styles";
 import MDBox from "./components/MDBox";
+import MDTypography from "./components/MDTypography";
 import MDButton from "./components/MDButton";
 // Material Dashboard 2 React example components
 import DashboardLayout from "./examples/LayoutContainers/DashboardLayout";
@@ -35,8 +40,8 @@ import Footer from "./examples/Footer";
 import ReportsBarChart from "./examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "./examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStatisticsCard";
-
-
+// import routes from "./routes";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 const APIs={
   'CreateEC2':'https://qggbftqkl6.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -214,6 +219,7 @@ class App extends Component {
     this.handleUrlChange=this. handleUrlChange.bind(this);
     this.addLatencyDB=this.addLatencyDB.bind(this);
     this.resultClear=this.resultClear.bind(this);
+    this.rdpConnect=this.rdpConnect.bind(this);
 
   }
 
@@ -1472,6 +1478,25 @@ LaunchApp() {
  
   }
 
+  rdpConnect(){
+    // var rdp = require('node-rdpjs');
+ 
+    // var client = rdp.createClient({ 
+    //     domain : 'my_domain', 
+    //     userName : 'my_username',
+    //     password : 'my_password',
+    //     enablePerf : true,
+    //     autoLogin : true,
+    //     decompress : false,
+    //     screen : { width : 800, height : 600 },
+    //     locale : 'en',
+    //     logLevel : 'INFO'
+    // }).on('connect', function () {
+    // }).on('close', function() {
+    // }).on('bitmap', function(bitmap) {
+    // }).on('error', function(err) {
+    // }).connect('XXX.XXX.XXX.XXX', 3389);
+  }
 
   onKeyUp(event) {
     if (event.charCode === 13) {
@@ -1529,6 +1554,10 @@ LaunchApp() {
     
     return (
       <ThemeProvider theme={theme}>
+           <CssBaseline />
+           {/* <Routes>
+         <DashboardLayout> */}
+       
     <MDBox py={3}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={3}>
@@ -1571,6 +1600,10 @@ LaunchApp() {
                   chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
                   
                 /> */}
+                                   <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+       
+        <MDBox pt={1} pb={1} px={1}>
                  <Plot
                     data={[
                       {
@@ -1582,9 +1615,11 @@ LaunchApp() {
                       },
                     
                     ]}
-                    layout={ {width: 320, height: 240} }
+                    layout={ {width: 300, height: 300} }
                   />
-                
+                 </MDBox>
+      </MDBox>
+    </Card>
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
@@ -1636,6 +1671,13 @@ LaunchApp() {
                   date="campaign sent 2 days ago"
                   chart={reportsBarChartData}
                 /> */}
+                         <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+       
+        <MDBox pt={3} pb={1} px={1}>
+       
+      
+      
                      Step1
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton>
@@ -1659,13 +1701,77 @@ LaunchApp() {
                           <select onChange={this.selectInstanceType}>
                             {instanceTypeList}
                           </select>
-               
+                  </MDBox>
+                          <MDBox mb={3}>
+                  Step4
+                          <MDButton
+                              component="a"
+                              href="https://vbs-user-website-bucket.s3.us-east-1.amazonaws.com/setIP.html"
+                              target="_blank"
+                              rel="noreferrer"
+                              variant="gradient"
+                              color="info"
+                             
+                            >
+                              Assign IP #1
+                     </MDButton>
+                     </MDBox>
+      </MDBox>
+    </Card>
               </MDBox>
+              
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-            Step4
+           
+            <Grid item xs={12} md={6} lg={8}>
+
               <MDBox mb={3}>
                 {/* <ReportsLineChart
+                  color="dark"
+                  title="completed tasks"
+                  description="Last Campaign Performance"
+                  date="just updated"
+                  chart={tasks}
+                /> */}
+                    <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+       
+        <MDBox pt={1} pb={1} px={1}>
+                 <div style={{overflow:'scroll'}}>
+                      <ButtonGroup >
+                            <Button label="UserTable" onClick={() => this.checkUserTable(this.state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button>
+                            <Button label="InstanceTable" onClick={() =>this.checkInstanceTablebyUser(this.state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
+                            <Button label="InstanceTable-UpdateStatus" onClick={() =>this.checkInstanceStatus(this.state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
+                            <Button label="LatencyTable" onClick={() => this.latencyResult(this.state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
+                            <Button label="CostTable" onClick={() =>  this.checkCostUsage(this.state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
+                            <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button>
+      
+                      </ButtonGroup>
+                      
+                      <Styles>
+                          <Table columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance} />
+                        </Styles>
+                        </div>
+
+                        </MDBox>
+      </MDBox>
+    </Card>
+                      
+                
+              </MDBox>
+            </Grid>
+          </Grid>
+        </MDBox>
+        <MDBox>
+          <Grid container spacing={3}>
+            {/* <Grid item xs={12} md={6} lg={8}> */}
+            <Grid item xs={12} md={6} lg={4}>
+           
+          
+           
+              <MDBox mb={3}>
+              
+
+                {/* <DefaultLineChart
                   color="success"
                   title="daily sales"
                   description={
@@ -1677,13 +1783,19 @@ LaunchApp() {
                   chart={sales}
                   
                 /> */}
-                
+                  <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+      Step5
+        <MDBox pt={1} pb={1} px={1}>
+          
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton>
                   
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkFlowLogs(this.state)}>Flow Log Analysis</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.rdpConnect(this.state)}>RDP connect</MDButton>
+               
                 </MDBox>
                 <MDBox mb={3}>
                 <MDButton  variant="gradient" color="info" onClick={() => this.handleClickPing(this.state)}>Flow Log Analysis</MDButton>
@@ -1697,51 +1809,39 @@ LaunchApp() {
                                
                              
                         
-               
-                
+             
                        
                          
                        
 
-               
+                               </MDBox>
+      </MDBox>
+    </Card>
               </MDBox>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                {/* <ReportsLineChart
-                  color="dark"
-                  title="completed tasks"
-                  description="Last Campaign Performance"
-                  date="just updated"
-                  chart={tasks}
-                /> */}
-               
-
+           
+           <Grid item xs={12} md={6} lg={4}>
+           <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+      <button onClick={()=>this.resultClear()}>Result Clear</button>
+        <MDBox pt={1} pb={1} px={1}>
+           <div style={{overflow:'scroll'}}>
                   
-                      
-                
-              </MDBox>
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-                Plot
-            </Grid>
+                    
+                      {resultDisplayString}
+                        </div>
+                        
+                        </MDBox>
+      </MDBox>
+    </Card>
+           </Grid>
             <Grid item xs={12} md={6} lg={4}>
-                 Plot
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-                Plot2
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}  >
             <Grid container ys={12} className="Block1" >
-                <Grid item xs={12} md={12} style={{backgroundColor:'black',color:'yellow',minHeight:70,overflow:'scroll'}}> 
+                <Grid item xs={12} md={12} style={{color:'yellow',minHeight:70,overflow:'scroll'}}> 
+                <Card sx={{ height: "100%" }}>
+      <MDBox padding="1rem">
+     
+        <MDBox pt={1} pb={1} px={1}>
                 <div style={section4}>
                       {"Please Type 'command'"}
                     <div>
@@ -1754,13 +1854,29 @@ LaunchApp() {
                     </input>
                     </div>
                     </div>
+                     
+                    </MDBox>
+      </MDBox>
+    </Card>
                     </Grid>
       
         </Grid>
             </Grid>
           </Grid>
         </MDBox>
+        <MDBox>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={8}>
+                Plot2
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}  >
+         
+            </Grid>
+          </Grid>
+        </MDBox>
       </MDBox>
+      {/* </DashboardLayout>
+      </Routes> */}
   </ThemeProvider>
 
 

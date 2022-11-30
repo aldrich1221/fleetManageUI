@@ -1,0 +1,28 @@
+<html>
+    <head>
+
+        <title>Open exe</title>
+        <input type="text" id="myText" name="name">
+
+        <script type="text/javascript">
+       
+        function runProgram()
+        {    var x = document.getElementById("myText").value;
+            console.log(x)
+            var shell = new ActiveXObject("WScript.Shell");                 
+            var appITunes = x
+            shell.Run(appITunes);
+        }        
+        </script>
+
+    </head>
+
+
+
+    <body>
+
+        <a href="javascript:runProgram()">Run program</a>
+
+    </body>
+
+</html>
