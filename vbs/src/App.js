@@ -1,7 +1,7 @@
 "use strict";
 import logo from './logo.svg';
 import './App.css';
-import React, {Component,useState, useEffect} from 'react';
+import React, {Component,useState, useEffect,useMemo } from 'react';
 import { makeStyles, Grid,Box,Container ,ButtonGroup,Button, TextField } from '@material-ui/core';
 import { flexbox } from '@material-ui/system';
 import styled from 'styled-components'
@@ -10,6 +10,7 @@ import {Table,Styles,tableColumnConfig} from './Table'
 import { useTable,usePagination, useRowSelect } from 'react-table'
 import { timer } from 'timer';
 import { InputGroup, FormControl, Input } from "react-bootstrap";
+import Plot from 'react-plotly.js';
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
 // // import React, { Component } from "react";
@@ -22,6 +23,21 @@ import { InputGroup, FormControl, Input } from "react-bootstrap";
 // import ncp from 'ncp';
 // import List from 'listr'
 // import { promisify } from 'util';
+////////////////////////////////////////////////
+import theme from "./assets/theme";
+import { ThemeProvider } from "@mui/material/styles";
+import MDBox from "./components/MDBox";
+import MDButton from "./components/MDButton";
+// Material Dashboard 2 React example components
+import DashboardLayout from "./examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "./examples/Navbars/DashboardNavbar";
+import Footer from "./examples/Footer";
+import ReportsBarChart from "./examples/Charts/BarCharts/ReportsBarChart";
+import ReportsLineChart from "./examples/Charts/LineCharts/ReportsLineChart";
+import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStatisticsCard";
+
+
+
 const APIs={
   'CreateEC2':'https://qggbftqkl6.execute-api.us-east-1.amazonaws.com/prod/v1',
   'DeleteEC2':'https://tbym4io348.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -123,6 +139,7 @@ const section4 = {
   　color:'yellow',
   　'fontWeight':'bold',
   
+  
 };
 class App extends Component {
   
@@ -200,7 +217,7 @@ class App extends Component {
 
   }
 
-
+  
 
   createFlowLogs=async (e)=>{
 
@@ -1270,6 +1287,7 @@ generateUUID(type){
   this.setState({
     userinfo:{id:userid,city:'Unknown',ip:'Unknown'}
   })
+  console.log(this.state.userinfo)
 
 }
 findBestRegion=async (e) =>{
@@ -1504,10 +1522,252 @@ LaunchApp() {
         <option key={i} value={item.id}>{item.name}</option>
       )
     }, this);
-   
+    // let sales= {
+    //   // labels: {["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]},
+    //   datasets: { label: "Mobile apps", data: [50, 40, 300, 320, 500, 350, 200, 230, 500] },
+    // }
+    
+    return (
+      <ThemeProvider theme={theme}>
+    <MDBox py={3}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              <ComplexStatisticsCard
+                color="dark"
+                icon="weekend"
+                title="Weekly Cost "
+                count={281}
+                percentage={{
+                  color: "success",
+                  amount: "+55%",
+                  label: "than lask week",
+                }}
+              />
+              
+            </MDBox>
+          </Grid>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              {/* <ComplexStatisticsCard
+                icon="leaderboard"
+                title="Running Instance / Registrated Instance"
+                count="10/23"
+                percentage={{
+                  color: "success",
+                  amount: "+3%",
+                  label: "than last month",
+                }}
+              /> */}
+                {/* <ReportsLineChart
+                  color="success"
+                  title="daily sales"
+                  description={
+                    <>
+                      (<strong>+15%</strong>) increase in today sales.
+                    </>
+                  }
+                  date="updated 4 min ago"
+                  chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
+                  
+                /> */}
+                 <Plot
+                    data={[
+                      {
+                        x: [1, 2, 3],
+                        y: [2, 6, 3],
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        marker: {color: 'red'},
+                      },
+                    
+                    ]}
+                    layout={ {width: 320, height: 240} }
+                  />
+                
+            </MDBox>
+          </Grid>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              <ComplexStatisticsCard
+                color="success"
+                icon="store"
+                title="Revenue"
+                count="34k"
+                percentage={{
+                  color: "success",
+                  amount: "+1%",
+                  label: "than yesterday",
+                }}
+              />
+            </MDBox>
+          </Grid>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              {/* <ComplexStatisticsCard
+                color="primary"
+                icon="person_add"
+                title="Followers"
+                count="+91"
+                percentage={{
+                  color: "success",
+                  amount: "",
+                  label: "Just updated",
+                }}
+              /> */}
+              {/* <ReportsBarChart
+                  color="info"
+                  title="website views"
+                  description="Last Campaign Performance"
+                  date="campaign sent 2 days ago"
+                  chart={reportsBarChartData}
+                /> */}
+            </MDBox>
+          </Grid>
+        </Grid>
+        <MDBox mt={4.5}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={4}>
+              <MDBox mb={3}>
+                {/* <ReportsBarChart
+                  color="info"
+                  title="website views"
+                  description="Last Campaign Performance"
+                  date="campaign sent 2 days ago"
+                  chart={reportsBarChartData}
+                /> */}
+                     Step1
+                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton>
+                </MDBox>
+
+                <MDBox mb={3}>
+                Step2
+                <MDButton  variant="gradient" color="info" onClick={() => this.findBestRegion(this.state)}>Analyze Regions</MDButton>
+                <select onChange={this.selectAnalysisMethod}>
+                            {analysisMethodsList}
+                          </select>
+                </MDBox>        
+                          <MDBox mb={3}>
+                  Step3
+                  <MDButton variant="gradient" color="info" onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
+               
+                       
+                          <select onChange={this.selectCountry}>
+                            {countriesList}
+                          </select>
+                          <select onChange={this.selectInstanceType}>
+                            {instanceTypeList}
+                          </select>
+               
+              </MDBox>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+            Step4
+              <MDBox mb={3}>
+                {/* <ReportsLineChart
+                  color="success"
+                  title="daily sales"
+                  description={
+                    <>
+                      (<strong>+15%</strong>) increase in today sales.
+                    </>
+                  }
+                  date="updated 4 min ago"
+                  chart={sales}
+                  
+                /> */}
+                
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton>
+                  
+                <MDButton  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.checkFlowLogs(this.state)}>Flow Log Analysis</MDButton>
+                </MDBox>
+                <MDBox mb={3}>
+                <MDButton  variant="gradient" color="info" onClick={() => this.handleClickPing(this.state)}>Flow Log Analysis</MDButton>
+                
+
+                              
+                              <TextField  
+                              fullWidth 
+                              placeholder='type IP or DNS...'
+                              onChange={this.handleUrlChange} style={ {'margin':'top', 'border':'1px dashed #390', 'width':'300px','borderStyle': 'dashed','borderColor': 'red'}} />
+                               
+                             
+                        
+               
+                
+                       
+                         
+                       
+
+               
+              </MDBox>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <MDBox mb={3}>
+                {/* <ReportsLineChart
+                  color="dark"
+                  title="completed tasks"
+                  description="Last Campaign Performance"
+                  date="just updated"
+                  chart={tasks}
+                /> */}
+               
+
+                  
+                      
+                
+              </MDBox>
+            </Grid>
+          </Grid>
+        </MDBox>
+        <MDBox>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={8}>
+                Plot
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+                 Plot
+            </Grid>
+          </Grid>
+        </MDBox>
+        <MDBox>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={8}>
+                Plot2
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}  >
+            <Grid container ys={12} className="Block1" >
+                <Grid item xs={12} md={12} style={{backgroundColor:'black',color:'yellow',minHeight:70,overflow:'scroll'}}> 
+                <div style={section4}>
+                      {"Please Type 'command'"}
+                    <div>
+                    {(this.state.commandtext=="")?"":this.state.commandtext.split('\n').map( (it, i) => <div style={{font:10}}key={'x'+i}>{selectedinstanceIdString}{" > "}{it}</div> )}
+                      {/* {this.state.commandtext.split('\n').map( (it, i) => <div style={{font:10}}key={'x'+i}>{selectedinstanceIdString}{" > "}{it}</div> )} */}
+                    </div>
+                    <div>{selectedinstanceIdString}{" > "}
+                      <input type="text" defaultValue={defaultCommandValue} id="testInput" onKeyPress={this.onKeyUp}  style={{font:10,backgroundColor:'black',color:'yellow','border':0}}>
+                              
+                    </input>
+                    </div>
+                    </div>
+                    </Grid>
+      
+        </Grid>
+            </Grid>
+          </Grid>
+        </MDBox>
+      </MDBox>
+  </ThemeProvider>
+
+
+    )
     return (
       <div>
-      
+        
       
         <Grid container ys={12}  className="Block1">
           <Grid item xs={12} md={12} display="flex"  className="Block1" style={{backgroundColor:'red'}}>
@@ -1528,15 +1788,7 @@ LaunchApp() {
 
                       <div style={section2_1}>
                       <div className="data-display" >
-                          <button onClick={() => this.generateUUID('usser')}>Get UserID</button>
-                          <button onClick={() => this.generateUUID('developer')}>Get Developer ID</button>
-                       
-                       
-                          <button onClick={() => this.findBestRegion(this.state)}>Analyze Regions</button>
                          
-                          <select onChange={this.selectAnalysisMethod}>
-                            {analysisMethodsList}
-                          </select>
                           {/* <button onClick={() => this.latencyResult(this.state)}>Get Latency Result</button> */}
                           </div>
                           {/* <div className="data-display">
@@ -1546,13 +1798,7 @@ LaunchApp() {
                           </div> */}
                        
                           <div className="data-display">
-                          <button onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</button>
-                          <select onChange={this.selectCountry}>
-                            {countriesList}
-                          </select>
-                          <select onChange={this.selectInstanceType}>
-                            {instanceTypeList}
-                          </select>
+                          
                           </div>
                           <div>
                           {/* <a > {(this.state.createdInstanceInfo.data=='No instance')?"":createdInstanceInfoString}</a> */}
@@ -1561,18 +1807,7 @@ LaunchApp() {
                       
                           {/* <button onClick={() => this.deleteEC2(this.state.createdInstanceInfo.data.instance_id,this.state.createdInstanceInfo.data.instance_region)}>Delete AWS EC2 Instance</button>
                           */}
-                          <button onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</button>
                           
-
-
-                         
-                    
-                      
-                              <button onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</button>
-                
-                          
-                              <button onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</button>
-                
                           </div>
                           <div className="data-display">
                       
@@ -1642,23 +1877,7 @@ LaunchApp() {
               </Grid>
         
         </Grid>
-        <Grid container ys={12} className="Block1">
-                <Grid item xs={12} md={12} style={{backgroundColor:'black',color:'yellow'}}> 
-                <div style={section4}>
-                      {"Please Type 'command'"}
-                    <div>
-                    {(this.state.commandtext=="")?"":this.state.commandtext.split('\n').map( (it, i) => <div style={{font:10}}key={'x'+i}>{selectedinstanceIdString}{" > "}{it}</div> )}
-                      {/* {this.state.commandtext.split('\n').map( (it, i) => <div style={{font:10}}key={'x'+i}>{selectedinstanceIdString}{" > "}{it}</div> )} */}
-                    </div>
-                    <div>{selectedinstanceIdString}{" > "}
-                    <input type="text" defaultValue={defaultCommandValue} id="testInput" onKeyPress={this.onKeyUp}  style={{font:10,backgroundColor:'black',color:'yellow','border':0}}>
-                              
-                    </input>
-                    </div>
-                    </div>
-                    </Grid>
-      
-        </Grid>
+       
       </div>
     );
   }
