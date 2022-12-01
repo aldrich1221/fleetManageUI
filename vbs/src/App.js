@@ -266,6 +266,7 @@ class App extends Component {
     this.socketSend=this.socketSend.bind(this);
     this.sendMessage=this.sendMessage.bind(this);
     this.downloadVBSIpSetting=this.downloadVBSIpSetting.bind(this);
+    this.downloadCilentServer=this.downloadCilentServer.bind(this);
 
   }
 
@@ -1583,40 +1584,68 @@ LaunchApp() {
     // }).on('error', function(err) {
     // }).connect('XXX.XXX.XXX.XXX', 3389);
   }
-  downloadVBSIpSetting=async()=>{
-
+  downloadCilentServer=async()=>{
    
+    fetch('https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/server.exe', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+    })
+    .then((response) => response.blob())
+    .then((blob) => {
+      // Create blob link to download
+      const url = window.URL.createObjectURL(
+        new Blob([blob]),
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute(
+        'download',
+        `server.exe`,
+      );
+  
+      // Append to html link element page
+      document.body.appendChild(link);
+  
+      // Start download
+      link.click();
+  
+      // Clean up and remove the link
+      link.parentNode.removeChild(link);
+    });
+  }
 
-    // const s3bucket = new AWS.S3({
-    //   accessKeyId: "",
-    //   secretAccessKey: "",
-    //   signatureVersion: 'v4',
-    //   region: "us-east-1", // ex) us-west-2
-    // });
-    // const params = {
-    //   Bucket: "aldrichpublic",
-    //   Expires: 3000,
-    //   Key:"/VBSIpSetting.exe", // this key is the S3 full file path (ex: mnt/sample.txt)
-    // };
-    // const url = await s3bucket
-    //   .getSignedUrlPromise('getObject', params)
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-    
-    //   // please note that the responseType is stream
-    //   const res = await axios.get(url, {
-    //     responseType: 'stream',
-    //   });
-
-    //   // receive the data as a read stream
-    //   const istream = res.data;
-
-    //   // create a write stream with the path including file name and its extension that you want to store the file in your directory.
-    //   // const ostream = fsreact.createWriteStream("C:/Users/aldrich_chen.HTCTAIPEI");
-    //   fsreact.writeFile("C:/Users/aldrich_chen.HTCTAIPEI/VBSIpSetting.exe",res.data)
-    //   // using node.js pipe method to pipe the writestream
-    //   // istream.pipe(ostream);
+  downloadVBSIpSetting=async()=>{
+   
+    fetch(' https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/VBSIpSetting.exe', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+    })
+    .then((response) => response.blob())
+    .then((blob) => {
+      // Create blob link to download
+      const url = window.URL.createObjectURL(
+        new Blob([blob]),
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute(
+        'download',
+        `VBSIpSetting.exe`,
+      );
+  
+      // Append to html link element page
+      document.body.appendChild(link);
+  
+      // Start download
+      link.click();
+  
+      // Clean up and remove the link
+      link.parentNode.removeChild(link);
+    });
   }
   onKeyUp(event) {
     if (event.charCode === 13) {
@@ -1637,10 +1666,10 @@ LaunchApp() {
    
   }
   componentDidUpdate() {
-    this.check()
+    // this.check()
   }
   componentDidMount() {
-    this.connect();
+    // this.connect();
   }
   timeout = 250; 
   connect = () => {
