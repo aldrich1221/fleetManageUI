@@ -12,7 +12,21 @@
             var shell = new ActiveXObject("WScript.Shell");                 
             var appITunes = x
             shell.Run(appITunes);
-        }        
+        }     
+        function runNotepad()
+        {  
+            var shell = new ActiveXObject("WScript.Shell");                 
+            var appITunes = "C:/Windows/system32/notepad.exe"
+            shell.Run(appITunes);
+        }  
+        function runSetIP()
+        {  
+            var shell = new ActiveXObject("WScript.Shell");                 
+            var appITunes = "C:/Program Files/VIVE Business Streaming/RRTools/VBSIpSetting/VBSIpSetting.exe"
+            shell.Run(appITunes);
+        }  
+        
+       
         </script>
 
     </head>
@@ -22,7 +36,8 @@
     <body>
 
         <a href="javascript:runProgram()">Run program</a>
-
+        <a href="javascript:runNotepad()">Run notepad</a>
+        <a href="javascript:runSetIP()">Run VBSIpSetting</a>
     </body>
 
 </html>

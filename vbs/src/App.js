@@ -42,7 +42,10 @@ import ReportsLineChart from "./examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStatisticsCard";
 // import routes from "./routes";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import AWS from 'aws-sdk';
+// import fsreact from 'fs-react';
 
+const axios = require('axios');
 const APIs={
   'CreateEC2':'https://qggbftqkl6.execute-api.us-east-1.amazonaws.com/prod/v1',
   'DeleteEC2':'https://tbym4io348.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -55,7 +58,12 @@ const APIs={
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1'
     
 }
+
+
+
+
 var pingTimeGlobal=9999
+var ws = new WebSocket("ws://localhost:5500/");
 const useStyles = makeStyles((theme) => ({
   container: {
     minHeight:400,
@@ -146,11 +154,46 @@ const section4 = {
   
   
 };
+
+class ChildComponent extends Component {
+  
+  componentDidUpdate(){
+    const {websocket,socketParamter,sendFlag,socketSend} = this.props;
+    console.log(sendFlag)
+    if (sendFlag==true & this.prev){
+      this.sendMessage()
+      socketSend(false)
+    }
+
+  }
+  sendMessage=()=>{
+      const {websocket,socketParamter} = this.props // websocket instance passed as props to the child component.
+      var data=socketParamter   
+      try {
+          websocket.send(data) //send data to the server
+      } catch (error) {
+          console.log(error) // catch error
+      }
+  }
+  render() {
+      return (
+          <div>
+             This Socket
+          </div>
+      );
+  }
+}
+
+
 class App extends Component {
   
   constructor() {
     super();
+    
     this.state = {
+      ws:null,
+      sendFlag:false,
+      socketParamter:{'action':'assign','instanceip':'123456'},
       commandtext: "",
       command:"",
       defaultCommandValue:"",
@@ -161,7 +204,7 @@ class App extends Component {
 
       userinfo: {ip:null,city:null},
       suitableZones:[],
-    
+      assignedIP:'',
       countries: [],
       analysisMethods:[],
       selectedZone:"Default",
@@ -220,10 +263,53 @@ class App extends Component {
     this.addLatencyDB=this.addLatencyDB.bind(this);
     this.resultClear=this.resultClear.bind(this);
     this.rdpConnect=this.rdpConnect.bind(this);
+    this.socketSend=this.socketSend.bind(this);
+    this.sendMessage=this.sendMessage.bind(this);
+    this.downloadVBSIpSetting=this.downloadVBSIpSetting.bind(this);
 
   }
 
-  
+
+  sendMessage=(ip)=>{
+    var url="http://localhost:9090/notepad"
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+
+      console.log("=========local server=========== ")
+      console.log(data)
+
+    })
+
+    
+}
+  socketSend(flag) {
+    this.setState({
+      sendFlag:flag
+    })
+  }
+
+  componentDidMount() {
+    ws = new WebSocket("ws://localhost:5500/");
+    ws.onopen = () => {
+    // on connecting, do nothing but log it to the console
+    console.log('connected')
+    }
+
+    ws.onmessage = evt => {
+    // listen to data sent from the websocket server
+    const message = JSON.parse(evt.data)
+    this.setState({dataFromServer: message})
+    console.log(message)
+    }
+
+    ws.onclose = () => {
+    console.log('disconnected')
+    // automatically try to reconnect on connection loss
+
+    }
+
+}
 
   createFlowLogs=async (e)=>{
 
@@ -1497,7 +1583,41 @@ LaunchApp() {
     // }).on('error', function(err) {
     // }).connect('XXX.XXX.XXX.XXX', 3389);
   }
+  downloadVBSIpSetting=async()=>{
 
+   
+
+    // const s3bucket = new AWS.S3({
+    //   accessKeyId: "",
+    //   secretAccessKey: "",
+    //   signatureVersion: 'v4',
+    //   region: "us-east-1", // ex) us-west-2
+    // });
+    // const params = {
+    //   Bucket: "aldrichpublic",
+    //   Expires: 3000,
+    //   Key:"/VBSIpSetting.exe", // this key is the S3 full file path (ex: mnt/sample.txt)
+    // };
+    // const url = await s3bucket
+    //   .getSignedUrlPromise('getObject', params)
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+    
+    //   // please note that the responseType is stream
+    //   const res = await axios.get(url, {
+    //     responseType: 'stream',
+    //   });
+
+    //   // receive the data as a read stream
+    //   const istream = res.data;
+
+    //   // create a write stream with the path including file name and its extension that you want to store the file in your directory.
+    //   // const ostream = fsreact.createWriteStream("C:/Users/aldrich_chen.HTCTAIPEI");
+    //   fsreact.writeFile("C:/Users/aldrich_chen.HTCTAIPEI/VBSIpSetting.exe",res.data)
+    //   // using node.js pipe method to pipe the writestream
+    //   // istream.pipe(ostream);
+  }
   onKeyUp(event) {
     if (event.charCode === 13) {
       console.log(event.target.value)
@@ -1516,7 +1636,58 @@ LaunchApp() {
     }
    
   }
-  
+  componentDidUpdate() {
+    this.check()
+  }
+  componentDidMount() {
+    this.connect();
+  }
+  timeout = 250; 
+  connect = () => {
+    
+    var ws = new WebSocket("ws://localhost:5500/ws");
+    let that = this; // cache the this
+    var connectInterval;
+    
+    // websocket onopen event listener
+    ws.onopen = () => {
+        console.log("connected websocket main component");
+
+        this.setState({ ws: ws });
+
+        that.timeout = 250; // reset timer to 250 on open of websocket connection 
+        clearTimeout(connectInterval); // clear Interval on on open of websocket connection
+    };
+
+    // websocket onclose event listener
+    ws.onclose = e => {
+        console.log(
+            `Socket is closed. Reconnect will be attempted in ${Math.min(
+                10000 / 1000,
+                (that.timeout + that.timeout) / 1000
+            )} second.`,
+            e.reason
+        );
+
+        that.timeout = that.timeout + that.timeout; //increment retry interval
+        connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
+    };
+
+    // websocket onerror event listener
+    ws.onerror = err => {
+        console.error(
+            "Socket encountered error: ",
+            err.message,
+            "Closing socket"
+        );
+
+        ws.close();
+    };
+};
+  check = () => {
+    const { ws } = this.state;
+    if (!ws || ws.readyState == WebSocket.CLOSED) this.connect(); //check if websocket instance is closed, if so call `connect` function.
+};
   render() {
     const { inputValue,commandtext,defaultCommandValue} = this.state;
    
@@ -1554,6 +1725,8 @@ LaunchApp() {
     
     return (
       <ThemeProvider theme={theme}>
+
+         {/* <ChildComponent websocket={this.state.ws} socketParamter={this.state.socketParamter} socketSend={this.socketSend} sendFlag={this.state.sendFlag}/> */}
            <CssBaseline />
            {/* <Routes>
          <DashboardLayout> */}
@@ -1564,13 +1737,13 @@ LaunchApp() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="dark"
-                icon="weekend"
-                title="Weekly Cost "
-                count={281}
+               
+                title={userinfo.id}
+                count={"VBS Developer"}
                 percentage={{
                   color: "success",
-                  amount: "+55%",
-                  label: "than lask week",
+                  amount: userinfo.ip,
+                  label: userinfo.city,
                 }}
               />
               
@@ -1578,8 +1751,8 @@ LaunchApp() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-              {/* <ComplexStatisticsCard
-                icon="leaderboard"
+              <ComplexStatisticsCard
+                
                 title="Running Instance / Registrated Instance"
                 count="10/23"
                 percentage={{
@@ -1587,7 +1760,7 @@ LaunchApp() {
                   amount: "+3%",
                   label: "than last month",
                 }}
-              /> */}
+              />
                 {/* <ReportsLineChart
                   color="success"
                   title="daily sales"
@@ -1600,7 +1773,7 @@ LaunchApp() {
                   chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
                   
                 /> */}
-                                   <Card sx={{ height: "100%" }}>
+                                   {/* <Card sx={{ height: "100%" }}>
       <MDBox padding="1rem">
        
         <MDBox pt={1} pb={1} px={1}>
@@ -1619,15 +1792,15 @@ LaunchApp() {
                   />
                  </MDBox>
       </MDBox>
-    </Card>
+    </Card> */}
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="success"
-                icon="store"
-                title="Revenue"
+               
+                title="APP Numbers"
                 count="34k"
                 percentage={{
                   color: "success",
@@ -1639,17 +1812,17 @@ LaunchApp() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-              {/* <ComplexStatisticsCard
+              <ComplexStatisticsCard
                 color="primary"
-                icon="person_add"
-                title="Followers"
+                
+                title="Weekly Cost "
                 count="+91"
                 percentage={{
                   color: "success",
                   amount: "",
                   label: "Just updated",
                 }}
-              /> */}
+              />
               {/* <ReportsBarChart
                   color="info"
                   title="website views"
@@ -1702,8 +1875,9 @@ LaunchApp() {
                             {instanceTypeList}
                           </select>
                   </MDBox>
+                  Step4 Assign IP
                           <MDBox mb={3}>
-                  Step4
+                          Method 1
                           <MDButton
                               component="a"
                               href="https://vbs-user-website-bucket.s3.us-east-1.amazonaws.com/setIP.html"
@@ -1713,8 +1887,16 @@ LaunchApp() {
                               color="info"
                              
                             >
-                              Assign IP #1
+                              Browser Trigger and USB( IE only)
+                     
                      </MDButton>
+                     </MDBox>
+                      <MDBox mb={3}>
+                      <MDButton variant="gradient" color="info" onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</MDButton>
+                      <MDButton variant="gradient" color="info" onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</MDButton>
+               
+                     <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
+               
                      </MDBox>
       </MDBox>
     </Card>
@@ -1883,7 +2065,7 @@ LaunchApp() {
     )
     return (
       <div>
-        
+       
       
         <Grid container ys={12}  className="Block1">
           <Grid item xs={12} md={12} display="flex"  className="Block1" style={{backgroundColor:'red'}}>
