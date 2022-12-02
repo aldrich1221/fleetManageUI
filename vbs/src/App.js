@@ -11,6 +11,7 @@ import { useTable,usePagination, useRowSelect } from 'react-table'
 import { timer } from 'timer';
 import { InputGroup, FormControl, Input } from "react-bootstrap";
 import Plot from 'react-plotly.js';
+
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
 // // import React, { Component } from "react";
@@ -266,6 +267,7 @@ class App extends Component {
     this.socketSend=this.socketSend.bind(this);
     this.sendMessage=this.sendMessage.bind(this);
     this.downloadVBSIpSetting=this.downloadVBSIpSetting.bind(this);
+    this.downloadFlowLogs=this.downloadFlowLogs.bind(this);
 
   }
 
@@ -1583,6 +1585,82 @@ LaunchApp() {
     // }).on('error', function(err) {
     // }).connect('XXX.XXX.XXX.XXX', 3389);
   }
+  downloadFlowLogs=async()=>{
+    AWS.config.update({
+      accessKeyId:"AKIA4T2RLXBEFJ7EQC5T",
+      secretAccessKey:"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",
+    });
+    const s3 = new AWS.S3();
+
+    const params = {
+      Bucket:"vbs-tempfile-bucket-htc",
+      Key: "i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0640Z_7f54a047.log.gz",
+    };
+    function downloadBlob(blob, name) {
+      // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+      const blobUrl = URL.createObjectURL(blob);
+      // Create a link element
+      const link = document.createElement('a');
+      // Set link's href to point to the Blob URL
+      link.href = blobUrl;
+      link.download = name;
+      // Append link to the body
+      document.body.appendChild(link);
+      // Dispatch click event on the link
+      // This is necessary as link.click() does not work on the latest firefox
+      link.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        })
+      );
+
+      // Remove link from body
+      document.body.removeChild(link);
+    }
+
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log(data.Body)
+        // let csvBlob = new Blob([data.Body.toString()], {
+        //   type: 'text/csv;charset=utf-8;',
+        // });
+        // downloadBlob(csvBlob, `${template}`);
+      }
+    });
+    // fetch("https://97sv9tdshc.execute-api.us-east-1.amazonaws.com/default/test-lifecycle",{
+    //   method:"GET",
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //   console.log(data)
+    // })   
+    // .catch(e => {
+    //     /*發生錯誤時要做的事情*/
+    //     console.log(e);
+    // })
+    //   console.log("download flow logs")
+    //   var url="https://vbs-tempfile-bucket-htc.s3.amazonaws.com/i-058200245bfa41801/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-09881bdb9eb3c734f_20221202T0720Z_156f591c.log.gz"
+    //   fetch(url,{
+    //     method:"GET",
+    //     headers:{
+    //       "x-amz-security-token":"FwoGZXIvYXdzEJv//////////wEaDJGkH44hD5XqwvN+UiLfAYe8Fe3ejVWwH+Mkq3mTkWExtFJmR6pMPWdYV1koq9vasGY1g9mic+Qwd0iNEte2HbBIa9KSbvjrdXH6Grz8SsJhlA8KVabXVith+zAiAlrO+IeXGEMMusB8u+hIA2d+RvPXRD8URr22ZkVB6Kujy9FW10VNOgtK7w87YcAuC0IC3F6ZRoXVEM7IvWsju7xZXNKF5FYYFDwNm9ZKxYs1b/us4Vl4WBMUZP69BsIQkfP6B4JPsOCEJmpwZCh1+TOELM4YZgjNluXOk0XlcUbrLNt/2mWQDEloyJ3nczJG2M4o046nnAYyLQFr5hhFW/OXbLpcdzp6sIkk2gae2pLoqOqLupOVNO16RLEFhkD91AFWE7I/oQ=="
+    //       ,"authorization":"AWS AKIA4T2RLXBEFJ7EQC5T:MIdI50ppcOMoA5Gst50jcc9G+9AKNWRTzHJk7c+b"
+    //       ,"x-amz-date":(new Date()).toUTCString()
+    //     }
+    
+    //   })
+    //   .then(res => {console.log(res)})
+    //   .catch(e => {
+    //       /*發生錯誤時要做的事情*/
+    //       console.log(e);
+    //   })
+
+
+  }
   downloadVBSIpSetting=async()=>{
 
    
@@ -1637,10 +1715,10 @@ LaunchApp() {
    
   }
   componentDidUpdate() {
-    this.check()
+    // this.check()
   }
   componentDidMount() {
-    this.connect();
+    // this.connect();
   }
   timeout = 250; 
   connect = () => {
@@ -1849,7 +1927,7 @@ LaunchApp() {
        
         <MDBox pt={3} pb={1} px={1}>
        
-      
+        
       
                      Step1
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
@@ -1862,12 +1940,18 @@ LaunchApp() {
                 <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select>
+                          <iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="300"
+    height="200"
+    src="https://www.openstreetmap.org/export/embed.html?bbox=119.5%2C22.5%2C120.5%2C23.5&layer=mapnik">
+</iframe>
                 </MDBox>        
                           <MDBox mb={3}>
                   Step3
                   <MDButton variant="gradient" color="info" onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
                
-                       
+
                           <select onChange={this.selectCountry}>
                             {countriesList}
                           </select>
@@ -1976,6 +2060,10 @@ LaunchApp() {
                   
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkFlowLogs(this.state)}>Flow Log Analysis</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.downloadFlowLogs('developer')}>Download Flow Logs</MDButton>
+                
+                
+                
                 <MDButton  variant="gradient" color="info" onClick={() => this.rdpConnect(this.state)}>RDP connect</MDButton>
                
                 </MDBox>

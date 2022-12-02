@@ -40,11 +40,8 @@ def my_path_val_ctr():
 
 @request_map("/setip/{path_val}")
 def my_path_val_ctr(path_val=PathValue()):
-        #     /Clear
+  
 
-        # /TCP
-
-        # /IP:192.168.2.5
     FNULL = open(os.devnull, 'w')    #use this if you want to suppress output to stdout from the subprocess
     
     # args = "./VBSIpSetting.exe -Clear -TCP -IP:" + path_val
@@ -53,6 +50,9 @@ def my_path_val_ctr(path_val=PathValue()):
     subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
     
     return f"<html><body>{path_val}</body></html>"
+
+
+
 server.start(port=9090)
 
 
