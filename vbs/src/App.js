@@ -2,7 +2,7 @@
 import logo from './logo.svg';
 import './App.css';
 import React, {Component,useState, useEffect,useMemo } from 'react';
-import { makeStyles, Grid,Box,Container ,ButtonGroup,Button, TextField } from '@material-ui/core';
+import { makeStyles, Grid,Box,Container ,ButtonGroup,Button, TextField} from '@material-ui/core';
 import { flexbox } from '@material-ui/system';
 import styled from 'styled-components'
 import uuid from 'react-uuid';
@@ -11,6 +11,7 @@ import { useTable,usePagination, useRowSelect } from 'react-table'
 import { timer } from 'timer';
 import { InputGroup, FormControl, Input } from "react-bootstrap";
 import Plot from 'react-plotly.js';
+import GoogleMap from "google-maps-react-markers"
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
 // // import React, { Component } from "react";
@@ -24,7 +25,9 @@ import Plot from 'react-plotly.js';
 // import List from 'listr'
 // import { promisify } from 'util';
 ////////////////////////////////////////////////
+
 import Card from "@mui/material/Card";
+import BasicTabs from './tabpanel';
 import Divider from "@mui/material/Divider";
 import Icon from "@mui/material/Icon";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -41,6 +44,7 @@ import ReportsBarChart from "./examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "./examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStatisticsCard";
 // import routes from "./routes";
+// import DashboardNavbar from "./examples/Navbars/DashboardNavbar";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AWS from 'aws-sdk';
 // import fsreact from 'fs-react';
@@ -63,7 +67,7 @@ const APIs={
 
 
 var pingTimeGlobal=9999
-var ws = new WebSocket("ws://localhost:5500/");
+// var ws = new WebSocket("ws://localhost:5500/");
 const useStyles = makeStyles((theme) => ({
   container: {
     minHeight:400,
@@ -202,7 +206,7 @@ class App extends Component {
       tableDataState:[{'firstName':'None'}],
       tableSelctedItem:[],
 
-      userinfo: {ip:null,city:null},
+      userinfo: {ip:null,city:null,id:null,name:null,type:null},
       suitableZones:[],
       assignedIP:'',
       countries: [],
@@ -267,6 +271,8 @@ class App extends Component {
     this.sendMessage=this.sendMessage.bind(this);
     this.downloadVBSIpSetting=this.downloadVBSIpSetting.bind(this);
     this.downloadCilentServer=this.downloadCilentServer.bind(this);
+    this.downloadFlowLogs=this.downloadFlowLogs.bind(this);
+    this.getUserInfo=this.getUserInfo.bind(this);
 
   }
 
@@ -290,27 +296,27 @@ class App extends Component {
     })
   }
 
-  componentDidMount() {
-    ws = new WebSocket("ws://localhost:5500/");
-    ws.onopen = () => {
-    // on connecting, do nothing but log it to the console
-    console.log('connected')
-    }
+//   componentDidMount() {
+//     ws = new WebSocket("ws://localhost:5500/");
+//     ws.onopen = () => {
+//     // on connecting, do nothing but log it to the console
+//     console.log('connected')
+//     }
 
-    ws.onmessage = evt => {
-    // listen to data sent from the websocket server
-    const message = JSON.parse(evt.data)
-    this.setState({dataFromServer: message})
-    console.log(message)
-    }
+//     ws.onmessage = evt => {
+//     // listen to data sent from the websocket server
+//     const message = JSON.parse(evt.data)
+//     this.setState({dataFromServer: message})
+//     console.log(message)
+//     }
 
-    ws.onclose = () => {
-    console.log('disconnected')
-    // automatically try to reconnect on connection loss
+//     ws.onclose = () => {
+//     console.log('disconnected')
+//     // automatically try to reconnect on connection loss
 
-    }
+//     }
 
-}
+// }
 
   createFlowLogs=async (e)=>{
 
@@ -1368,18 +1374,53 @@ createLatencyTestInstance=async (e) =>{
 
 
 }
+getUserInfo(userid,type){
+  const ipUrl='https://ip.nf/me.json'
+  var ip=null
+  var country=null
+  var city=null
+  var latitude=null
+  var longitude=null
+  var name=null
+  var city=null
+  fetch(ipUrl,{method:"GET"})
+  .then(res => res.json())
+  .then(data => {
+    console.log(data)
+    country=data.ip.country
+    ip=data.ip.ip
+    latitude=data.ip.latitude
+    longitude=data.ip.longitude
+    city=data.ip.city
+    this.setState({
+      userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude}
+    })
+
+    
+  })
+
+
+
+
+}
 
 generateUUID(type){
   var userid=null
+  var name=null
+ 
   if (type=='user'){
     userid=uuid()
+    name="Enterprise User"
+    
   }
   else{
     userid='developer-123456789'
+    name="VBS Developer"
+  
+
   }
-  this.setState({
-    userinfo:{id:userid,city:'Unknown',ip:'Unknown'}
-  })
+  this.getUserInfo(userid,type)
+ 
   console.log(this.state.userinfo)
 
 }
@@ -1616,6 +1657,38 @@ LaunchApp() {
     });
   }
 
+  downloadFlowLogs=async()=>{
+   
+    fetch('https://vbs-tempfile-bucket-htc.s3.amazonaws.com/i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0645Z_3cb900b2.log.gz', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+    })
+    .then((response) => response.blob())
+    .then((blob) => {
+      // Create blob link to download
+      const url = window.URL.createObjectURL(
+        new Blob([blob]),
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute(
+        'download',
+        `867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0640Z_7f54a047.log.gz`,
+      );
+  
+      // Append to html link element page
+      document.body.appendChild(link);
+  
+      // Start download
+      link.click();
+  
+      // Clean up and remove the link
+      link.parentNode.removeChild(link);
+    });
+  }
+
   downloadVBSIpSetting=async()=>{
    
     fetch(' https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/VBSIpSetting.exe', {
@@ -1672,51 +1745,51 @@ LaunchApp() {
     // this.connect();
   }
   timeout = 250; 
-  connect = () => {
+//   connect = () => {
     
-    var ws = new WebSocket("ws://localhost:5500/ws");
-    let that = this; // cache the this
-    var connectInterval;
+//     var ws = new WebSocket("ws://localhost:5500/ws");
+//     let that = this; // cache the this
+//     var connectInterval;
     
-    // websocket onopen event listener
-    ws.onopen = () => {
-        console.log("connected websocket main component");
+//     // websocket onopen event listener
+//     ws.onopen = () => {
+//         console.log("connected websocket main component");
 
-        this.setState({ ws: ws });
+//         this.setState({ ws: ws });
 
-        that.timeout = 250; // reset timer to 250 on open of websocket connection 
-        clearTimeout(connectInterval); // clear Interval on on open of websocket connection
-    };
+//         that.timeout = 250; // reset timer to 250 on open of websocket connection 
+//         clearTimeout(connectInterval); // clear Interval on on open of websocket connection
+//     };
 
-    // websocket onclose event listener
-    ws.onclose = e => {
-        console.log(
-            `Socket is closed. Reconnect will be attempted in ${Math.min(
-                10000 / 1000,
-                (that.timeout + that.timeout) / 1000
-            )} second.`,
-            e.reason
-        );
+//     // websocket onclose event listener
+//     ws.onclose = e => {
+//         console.log(
+//             `Socket is closed. Reconnect will be attempted in ${Math.min(
+//                 10000 / 1000,
+//                 (that.timeout + that.timeout) / 1000
+//             )} second.`,
+//             e.reason
+//         );
 
-        that.timeout = that.timeout + that.timeout; //increment retry interval
-        connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
-    };
+//         that.timeout = that.timeout + that.timeout; //increment retry interval
+//         connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
+//     };
 
-    // websocket onerror event listener
-    ws.onerror = err => {
-        console.error(
-            "Socket encountered error: ",
-            err.message,
-            "Closing socket"
-        );
+//     // websocket onerror event listener
+//     ws.onerror = err => {
+//         console.error(
+//             "Socket encountered error: ",
+//             err.message,
+//             "Closing socket"
+//         );
 
-        ws.close();
-    };
-};
-  check = () => {
-    const { ws } = this.state;
-    if (!ws || ws.readyState == WebSocket.CLOSED) this.connect(); //check if websocket instance is closed, if so call `connect` function.
-};
+//         ws.close();
+//     };
+// };
+//   check = () => {
+//     const { ws } = this.state;
+//     if (!ws || ws.readyState == WebSocket.CLOSED) this.connect(); //check if websocket instance is closed, if so call `connect` function.
+// };
   render() {
     const { inputValue,commandtext,defaultCommandValue} = this.state;
    
@@ -1751,7 +1824,10 @@ LaunchApp() {
     //   // labels: {["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]},
     //   datasets: { label: "Mobile apps", data: [50, 40, 300, 320, 500, 350, 200, 230, 500] },
     // }
-    
+
+    const userlocateionboxstring=(this.state.userinfo.longitude-0.1).toString()+"%2C"+(this.state.userinfo.latitude-0.1).toString()+"%2C"+(this.state.userinfo.longitude+0.1).toString()+"%2C"+(this.state.userinfo.latitude+0.1).toString()
+    const openstreetmapurl="https://www.openstreetmap.org/export/embed.html?bbox="+userlocateionboxstring+"&layer=mapnik"
+    console.log(openstreetmapurl)
     return (
       <ThemeProvider theme={theme}>
 
@@ -1759,8 +1835,10 @@ LaunchApp() {
            <CssBaseline />
            {/* <Routes>
          <DashboardLayout> */}
-       
-    <MDBox py={3}>
+       <DashboardNavbar userinfo={this.state.userinfo} generateUUID={this.generateUUID}/>
+
+
+    {userinfo.id==null?<div></div>:<MDBox py={3}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
@@ -1775,6 +1853,12 @@ LaunchApp() {
                   label: userinfo.city,
                 }}
               />
+              {/* <iframe id="inlineFrameExample"
+                title="Inline Frame Example"
+                width="100"
+                height="200"
+                src={openstreetmapurl}>
+            </iframe> */}
               
             </MDBox>
           </Grid>
@@ -1841,6 +1925,7 @@ LaunchApp() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
+          
               <ComplexStatisticsCard
                 color="primary"
                 
@@ -1852,6 +1937,10 @@ LaunchApp() {
                   label: "Just updated",
                 }}
               />
+           
+            
+              
+             
               {/* <ReportsBarChart
                   color="info"
                   title="website views"
@@ -1881,8 +1970,10 @@ LaunchApp() {
       
       
                      Step1
-                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton>
+                {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
+                
+                
                 </MDBox>
 
                 <MDBox mb={3}>
@@ -1891,6 +1982,8 @@ LaunchApp() {
                 <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select>
+                          
+         
                 </MDBox>        
                           <MDBox mb={3}>
                   Step3
@@ -1927,6 +2020,12 @@ LaunchApp() {
                      <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
                
                      </MDBox>
+                     <MDBox mb={3}>
+                     <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton>
+               
+                     </MDBox>
       </MDBox>
     </Card>
               </MDBox>
@@ -1945,7 +2044,7 @@ LaunchApp() {
                 /> */}
                     <Card sx={{ height: "100%" }}>
       <MDBox padding="1rem">
-       
+      <BasicTabs/> 
         <MDBox pt={1} pb={1} px={1}>
                  <div style={{overflow:'scroll'}}>
                       <ButtonGroup >
@@ -1972,7 +2071,8 @@ LaunchApp() {
             </Grid>
           </Grid>
         </MDBox>
-        <MDBox>
+        
+        {userinfo.type=="developer"?<MDBox>
           <Grid container spacing={3}>
             {/* <Grid item xs={12} md={6} lg={8}> */}
             <Grid item xs={12} md={6} lg={4}>
@@ -1999,12 +2099,12 @@ LaunchApp() {
       Step5
         <MDBox pt={1} pb={1} px={1}>
           
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton>
-                  
+             
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.checkFlowLogs(this.state)}>Flow Log Analysis</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.downloadFlowLogs(this.state)}> Flow Log Download</MDButton>
+
+                
                 <MDButton  variant="gradient" color="info" onClick={() => this.rdpConnect(this.state)}>RDP connect</MDButton>
                
                 </MDBox>
@@ -2074,7 +2174,8 @@ LaunchApp() {
         </Grid>
             </Grid>
           </Grid>
-        </MDBox>
+        </MDBox>:<div></div>}
+        
         <MDBox>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6} lg={8}>
@@ -2085,7 +2186,7 @@ LaunchApp() {
             </Grid>
           </Grid>
         </MDBox>
-      </MDBox>
+      </MDBox>}
       {/* </DashboardLayout>
       </Routes> */}
   </ThemeProvider>

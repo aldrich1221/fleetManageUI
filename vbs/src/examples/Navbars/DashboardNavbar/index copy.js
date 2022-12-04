@@ -16,7 +16,7 @@ Coded by www.creative-tim.com
 import { useState, useEffect } from "react";
 
 // react-router components
-// import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -31,7 +31,7 @@ import Icon from "@mui/material/Icon";
 // Material Dashboard 2 React components
 import MDBox from "../../../components/MDBox";
 import MDInput from "../../../components/MDInput";
-import MDButton from "../../../components/MDButton";
+
 // Material Dashboard 2 React example components
 import Breadcrumbs from "../../../examples/Breadcrumbs";
 import NotificationItem from "../../../examples/Items/NotificationItem";
@@ -53,13 +53,12 @@ import {
   setOpenConfigurator,
 } from "../../../context";
 
-function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID }) {
-  // const {userinfo} = props;
+function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
-  // const route = useLocation().pathname.split("/").slice(1);
+  const route = useLocation().pathname.split("/").slice(1);
 
   useEffect(() => {
     // Setting the navbar type
@@ -132,20 +131,52 @@ function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-          {/* <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} /> */}
-          VBS Cloud
+          <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} />
         </MDBox>
-        
-        <MDButton  variant="gradient" color="success" style={{textTransform: 'none'}} onClick={() => generateUUID('user')}> I am an enterprise user.</MDButton>
-        <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => generateUUID('developer')}>I am a developer / an administrator</MDButton>
-                
         {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
             <MDBox pr={1}>
-              {/* <MDInput label="Search here" /> */}
+              <MDInput label="Search here" />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
-        
+              <Link to="/authentication/sign-in/basic">
+                <IconButton sx={navbarIconButton} size="small" disableRipple>
+                  <Icon sx={iconsStyle}>account_circle</Icon>
+                </IconButton>
+              </Link>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarMobileMenu}
+                onClick={handleMiniSidenav}
+              >
+                <Icon sx={iconsStyle} fontSize="medium">
+                  {miniSidenav ? "menu_open" : "menu"}
+                </Icon>
+              </IconButton>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                onClick={handleConfiguratorOpen}
+              >
+                <Icon sx={iconsStyle}>settings</Icon>
+              </IconButton>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                aria-controls="notification-menu"
+                aria-haspopup="true"
+                variant="contained"
+                onClick={handleOpenMenu}
+              >
+                <Icon sx={iconsStyle}>notifications</Icon>
+              </IconButton>
+              {renderMenu()}
             </MDBox>
           </MDBox>
         )}
