@@ -17,6 +17,8 @@
     "axios": "^1.2.0",
     "chart.js": "^4.0.1",
     "chroma-js": "^2.4.2",
+    "google-map-react": "^2.2.0",
+    "google-maps-react-markers": "^1.0.9",
     "node-rdpjs": "^0.3.0",
     "plotly.js": "^2.16.3",
     "prop-types": "^15.8.1",
@@ -40,7 +42,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build ",
+    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

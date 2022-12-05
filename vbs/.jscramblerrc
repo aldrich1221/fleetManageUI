@@ -1,0 +1,21 @@
+{
+  "keys": {
+    "accessKey": "0BD48E5E5AEC5A46F6B0832C989FB668070A491D",
+    "secretKey": "B53380430D9681B1533C8F083183DDCEE46092D1"
+  },
+  "applicationId": "63738999dff7c600112e9feb",
+  "filesSrc": [
+    "./build/**/*.html",
+    "./build/**/*.js"
+  ],
+  "filesDest": "./",
+  "params": [ ],
+  "areSubscribersOrdered": false,
+  "useRecommendedOrder": true,
+  "jscramblerVersion": "7.3",
+  "tolerateMinification": true,
+  "profilingDataMode": "off",
+  "useAppClassification": true,
+  "browsers": {},
+  "sourceMaps": false
+}

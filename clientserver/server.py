@@ -38,18 +38,33 @@ def my_path_val_ctr():
     subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
     return f"<html><body>good</body></html>"
 
+@request_map("/setip2")
+def my_path_val_ctr2():
+        #     /Clear
+
+        # /TCP
+
+        # /IP:192.168.2.5
+    FNULL = open(os.devnull, 'w')    #use this if you want to suppress output to stdout from the subprocess
+    
+    # args = "./VBSIpSetting.exe /Clear /TCP /IP: " + path_val
+    args = "./VBSIpSetting.exe"
+    subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
+    return f"<html><body>good</body></html>"
+    
 @request_map("/setip/{path_val}")
 def my_path_val_ctr(path_val=PathValue()):
   
 
     FNULL = open(os.devnull, 'w')    #use this if you want to suppress output to stdout from the subprocess
     
-    # args = "./VBSIpSetting.exe -Clear -TCP -IP:" + path_val
-    args = "./VBSIpSetting.exe"
+    args = "./VBSIpSetting.exe /Clear /TCP /IP:" + path_val
+    # args = "./VBSIpSetting.exe"
     # args = "C:/Windows/system32/notepad.exe"
     subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
     
     return f"<html><body>{path_val}</body></html>"
+
 
 
 
