@@ -58,11 +58,14 @@ def my_path_val_ctr(path_val=PathValue()):
 
     FNULL = open(os.devnull, 'w')    #use this if you want to suppress output to stdout from the subprocess
     
-    args = "./VBSIpSetting.exe /Clear /TCP /IP:" + path_val
-    # args = "./VBSIpSetting.exe"
-    # args = "C:/Windows/system32/notepad.exe"
-    subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
+    # args = "./VBSIpSetting.exe /Clear /TCP /IP:" + path_val
+    # # args = "./VBSIpSetting.exe"
+    # # args = "C:/Windows/system32/notepad.exe"
+    # subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
     
+    
+
+    subprocess.call('C:\Windows\System32\powershell.exe Expand-Archive -LiteralPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIpSetting.zip -DestinationPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIPSettingOutput -Force', shell=True)
     return f"<html><body>{path_val}</body></html>"
 
 
