@@ -61,6 +61,7 @@ const APIs={
   'Metrics':'https://fzghypjvb1.execute-api.us-east-1.amazonaws.com/prod/v1',
   // 'LatencyTest':'https://9prtgwbcnf.execute-api.us-east-1.amazonaws.com/prod/v1',
   'LatencyTest':'https://y2golzdfea.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'Test': 'https://9prtgwbcnf.execute-api.us-east-1.amazonaws.com/prod/v1',
   
   'SendCommand':'https://sf43cgtn5g.execute-api.us-east-1.amazonaws.com/prod/v1',
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -155,13 +156,13 @@ const section3 = {
   border:'solid'
 };
 const section4 = {
-  minHeight:300,
+  minHeight:350,
   height: "100%",
   paddingTop: 5,
   backgroundColor:'black',
   　color:'yellow',
   　'fontWeight':'bold',
-  maxHeight:400,
+  maxHeight:350,
   overflow:'scroll'
   
   
@@ -536,7 +537,7 @@ httppingtest=async (data) =>{
               // var url = "http://" + fqdn
               if (i < MAX_ITERATIONS) {
                   ping = new XMLHttpRequest();
-                  ping.setRequestHeader('Access-Control-Allow-Origin', 'https://d1wzk0972nk23y.cloudfront.net/')
+                  // ping.setRequestHeader('Access-Control-Allow-Origin', 'https://d1wzk0972nk23y.cloudfront.net/')
                   
                   ping.seq = i;
                   over_flag++;
@@ -1417,26 +1418,37 @@ handleClickPing=async (e) =>{
            
   }
 
-
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
 createLatencyTestInstance=async (e) =>{
   // var url=APIs['LatencyTest']+'?userid='+e.userinfo.id
-  var url1=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/init'
-  var url2=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/check'
-  var url3=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/delete'
+  // var url1=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/init'
+  // var url2=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/check'
+  // var url3=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/delete'
+  var url1=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=init'
+  var url2=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=check'
+  var url3=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=delete'
+
+
   const requestOptions1 = {
     method: 'GET',
     headers: { 
       'Content-Type': 'application/json' ,
       'Authorization':'allow',
-      'authorizationToken':'allow'
+      // 'authorizationToken':'allow'
     },
     }
+
   let RegionInfo=[]
+  var instanceData=null
   fetch(url1,requestOptions1)
   .then(res => res.json())
   .then(data => {
-    var instanceData=data[0]['instanceData']
+    console.log("Response")
+    console.log(data)
+    instanceData=data[0]['data'][0]['instanceData']
     console.log("========instanceData======")
     console.log(instanceData)
     
@@ -1450,44 +1462,54 @@ createLatencyTestInstance=async (e) =>{
     //   },
     //   )
     // }
-    console.log("========RegionInfo======")
-    console.log(data[0]['instanceData'])
+    console.log("========Created Instance Response======")
+    console.log(instanceData)
 
-    var Flag=true
-    while(Flag){
-      Flag=false
-      const requestOptions = {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' ,
-          'Authorization':'allow'
-        },
-        body: JSON.stringify({ 
-          'instanceData':data[0]
-      })}
-      setTimeout(function(){
-        fetch(url2,requestOptions )
-        .then(res => res.json())
-        .then(data => {
-         console.log("check latency test intance status")
-         console.log(data[0]['instanceData']['InstanceStatuses'])
-         for (let i = 0; i < data[0]['instanceData']['InstanceStatuses'].length; i++) {   
-            if (data[0]['instanceData']['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
-              Flag=true
-            }
-            if (data[0]['instanceData']['InstanceStatuses'][i]['SystemStatus']['Status']!='ok'){
-              Flag=true
-            }
-         }
-         console.log(Flag)
+    // var Flag=true
+    // while(Flag){
+    //   Flag=false
+    //   const requestOptions2 = {
+    //     method: 'POST',
+    //     headers: { 
+    //       'Content-Type': 'application/json' ,
+    //       'Authorization':'allow'
+    //     },
+    //     body: JSON.stringify({ 
+    //       'instanceData':data[0]
+    //   })}
+    //   setTimeout(function(){
+    //     fetch(url2,requestOptions2 )
+    //     .then(res => res.json())
+    //     .then(data => {
+    //      console.log("check latency test intance status")
+    //      console.log(data[0]['instanceData']['InstanceStatuses'])
+    //      for (let i = 0; i < data[0]['instanceData']['InstanceStatuses'].length; i++) {   
+    //         if (data[0]['instanceData']['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
+    //           Flag=true
+    //         }
+    //         if (data[0]['instanceData']['InstanceStatuses'][i]['SystemStatus']['Status']!='ok'){
+    //           Flag=true
+    //         }
+    //      }
+    //      console.log(Flag)
 
-        })
-      }, 15000);
-     
-    }
+    //     })
+    //   }, 15000);
     
-
-    this.httppingtest(data[0]['instanceData'])
+     
+    // }
+    // var Flag=true
+    
+    // setTimeout(function(Flag){
+    //   console.log("waiting 5 sec....")
+    //   Flag=false
+     
+    // },5000)
+    // while(Flag){
+      
+    // }
+    this.delay(5000)
+    this.httppingtest(instanceData)
 
     const requestOptions3 = {
       method: 'POST',
@@ -1496,20 +1518,23 @@ createLatencyTestInstance=async (e) =>{
         'Authorization':'allow'
       },
       body: JSON.stringify({ 
-        'instanceData':data[0]['instanceData']
+        'instanceData':instanceData
     })}
-    fetch(url3,requestOptions3 )
-    .then(res => res.json())
-    .then(data => {
-     console.log(data)
-    })
+    // fetch(url3,requestOptions3 )
+    // .then(res => res.json())
+    // .then(data => {
+    //  console.log(data)
+    // })
+   
 
-    // for (let i = 0; i < data[0]['instanceData'].length; i++) {   
-    //   this.deleteEC2(data[0]['instanceData'][i].instanceid,data[0]['instanceData'][i].region)
+    // for (let i = 0; i < instanceData.length; i++) {   
+    //   this.deleteEC2(instanceData[i].instanceid,instanceData[i].region)
     // }
 
    
   })
+  console.log("outside fetch")
+  console.log(instanceData)
 
 
 }
@@ -2135,7 +2160,6 @@ LaunchApp() {
        
         
       
-                     Step1
                 {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
                 
@@ -2143,8 +2167,8 @@ LaunchApp() {
                 </MDBox>
 
                 <MDBox mb={3}>
-                Step2
-                <MDButton  variant="gradient" color="info" onClick={() => this.findBestRegion(this.state)}>Analyze Regions</MDButton>
+               
+                <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion(this.state)}>Analyze Regions</MDButton>
                 <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select>
@@ -2153,7 +2177,7 @@ LaunchApp() {
                 </MDBox>        
                           <MDBox mb={3}>
                   Step3
-                  <MDButton variant="gradient" color="info" onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
+                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
                
 
                           <select onChange={this.selectCountry}>
@@ -2180,8 +2204,8 @@ LaunchApp() {
                      </MDButton>
                      </MDBox>
                       <MDBox mb={3}>
-                      <MDButton variant="gradient" color="info" onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</MDButton>
-                      <MDButton variant="gradient" color="info" onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</MDButton>
+                      <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</MDButton>
+                      <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</MDButton>
                
                      <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
                
@@ -2324,8 +2348,8 @@ LaunchApp() {
            </Grid>
             <Grid item xs={12} md={6} lg={4}>
             <Grid container ys={12} className="Block1" >
-                <Grid item xs={12} md={12} style={{color:'yellow',minHeight:70,maxHeight:400}}> 
-                <Card sx={{ height: "100%" ,maxHeight:400}}>
+                <Grid item xs={12} md={12} style={{color:'yellow',minHeight:"100%",maxHeight:"100%"}}> 
+                <Card sx={{ height: "100%" ,maxHeight:"100%"}}>
       <MDBox padding="1rem">
      
         <MDBox pt={1} pb={1} px={1}>
