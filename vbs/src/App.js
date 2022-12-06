@@ -226,7 +226,7 @@ class App extends Component {
       selectedInstanceType:"g4dn.xlarge",
       selectedInstanceId:'No',
       createdInstanceInfo:{'data':'Nothing'},
-      selectedAnalysisMethod: 'Geolocation_Global',
+      selectedAnalysisMethod: 'Latency_Global_byInstance',
       selectedRescueAction:'EC2Rescue-collect-eventlog',
       userHelpString:"Helper: Please click 'Analyze Regions' button",
       latencyTable:[{'latencyTest':[{id: "zone",Ave_bits_per_second:"Average of bits per second",Ave_lost_percent:"Average of lost percent",Ave_jitter_ms: "Average of jitter_ms", ip:"instance IP",ec2id:"instance ID",instanceCity:"instanceCity",instanceCountry:"instanceCountry",result:"Latency",status:"Status"}]}],
@@ -235,7 +235,7 @@ class App extends Component {
       latencyResult:[{}],
       latencyTestStatus:'NoIPs',
       pingTimeState:0,
-      tableColumnState:'basic',
+      // tableColumnState:'basic',
       tableDataState:[],
       tableSelctedItem:[],
       selectedinstanceIdString:'No instance',
@@ -298,6 +298,7 @@ class App extends Component {
     this.downloadFlowLogs=this.downloadFlowLogs.bind(this);
     this.getUserInfo=this.getUserInfo.bind(this);
     this.checkInstanceTablebyUser=this.checkInstanceTablebyUser.bind(this);
+    this.checkLatencyTablebyCity=this.checkLatencyTablebyCity.bind(this);
 
   }
 
@@ -1264,6 +1265,67 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
   }
 
 
+  checkLatencyTablebyCity=async (e)=>{
+    var city=e.userinfo.city
+    var userid=e.userinfo.id
+    console.log("wait.......")
+    // sleep(10000);
+    console.log("wait end")
+    var datalist=[]
+    var url=APIs['QueryDB']+'?tableName=VBS_Letency_Test&city='+city
+
+    const response_from_init = await fetch(url,{method:"GET"})
+    const data = await response_from_init.json();
+   
+    let items = [];         
+    var itemString=" "
+    var defaultzone=""
+    var Flag=false
+    console.log("==========VBS_Latency_Test=======")
+    console.log(data)
+  
+    for (let i = 0; i < data['data'][0]['latencyTest'].length; i++) {   
+        
+      datalist.push({
+    
+      user_id:data['data'][0]['latencyTest'][i].user_id,
+      userCity:data['data'][0]['latencyTest'][i].userCity,
+      userIP:data['data'][0]['latencyTest'][i].userIP,
+      userLatitude:data['data'][0]['latencyTest'][i].userLatitude,
+      userLongitude:data['data'][0]['latencyTest'][i].userLongitude,
+      
+      instanceid: data['data'][0]['latencyTest'][i].instanceid,
+      instanceCity:data['data'][0]['latencyTest'][i].instanceCity,
+      instanceCountry:data['data'][0]['latencyTest'][i].instanceCountry,
+    
+  
+      instanceIp:data['data'][0]['latencyTest'][i].instanceIp,
+
+      region:data['data'][0]['latencyTest'][i].region,
+      zone:data['data'][0]['latencyTest'][i].zone,
+      latency:data['data'][0]['latencyTest'][i].latency,
+      
+      
+      })
+      
+    }
+
+    // var response=this.checkInstanceStatus(datalist)
+    // console.log("==========response checkInstanceStatus=======")
+    // console.log(response)
+    this.setState({
+      // instanceTable:data['data'],
+      
+      //   displayTable:data['data'][0]['data'],
+        tableDataState:datalist,
+        tableColumnState:'latencyTable'
+        
+    });
+    return datalist
+    
+    
+  }
+
   checkLatencyTablebyUser(userid){
   console.log("wait.......")
   // sleep(10000);
@@ -1472,8 +1534,8 @@ createLatencyTestInstance=async (e) =>{
 
   let RegionInfo=[]
   this.setState({processbarStatus:'20'})
-  const response = await fetch(url1,requestOptions1)
-  const data = await response.json();
+  const response_from_init = await fetch(url1,requestOptions1)
+  const data = await response_from_init.json();
   // .then(res => res.json())
   // .then(data => {
     
@@ -1587,14 +1649,16 @@ createLatencyTestInstance=async (e) =>{
         'Authorization':'allow'
       },
       body: JSON.stringify({ 
-        'instanceData':data[0]
+        'instanceData':data[0]["data"][0]["instanceData"]
     })}
+    console.log(requestOptions2)
+  
       await timer(3000)
       const response = await fetch(url2,requestOptions2 )
       const data2 = await response.json();
       console.log(data2)
-      for (let i = 0; i < data2[0]['instanceData']['InstanceStatuses'].length; i++) {   
-        if (data2[0]['instanceData']['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
+      for (let i = 0; i < data2[0]["data"][0]["instanceData"]['InstanceStatuses'].length; i++) {   
+        if (data2[0]["data"][0]["instanceData"]['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
           Flag=true
         }
         // if (data[0]['instanceData']['InstanceStatuses'][i]['SystemStatus']['Status']!='ok'){
@@ -1753,6 +1817,147 @@ deleteLatencyTestInstance(){
   // })
 
 }
+
+
+findBestRegion_v2=async (e) =>{
+  var user_id=null
+  var userinfo={
+    id:e.userinfo.id,
+    city:null,
+    ip:null
+    
+  }
+  const latencydatalist=await this.checkLatencyTablebyCity(e)
+  if (latencydatalist.length!=0){
+                for (let i = 0; i <latencydatalist.length; i++) {   
+                  if (i==0){
+                    itemString="(Recommended): "
+                    defaultzone=latencydatalist[i].zone
+                  }
+                  else{
+                    itemString=" "
+                  }
+                    items.push({
+
+
+                      itemString:itemString , 
+                      id: latencydatalist[i].zone, 
+                      city: latencydatalist[i].city,
+                      country:latencydatalist[i].country,
+                      result:latencydatalist[i].distance,});   
+              }
+              this.setState({
+                // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
+                countries: items,
+                selectedZone:defaultzone
+              });
+
+  }else{
+  
+  
+  var selectedAnalysisMethod=e.selectedAnalysisMethod
+
+
+
+  var url=APIs['AnalysisIP']+'?routePolicy='+selectedAnalysisMethod+'&userid='+e.userinfo.id
+  fetch(url,{method:"GET"})
+  .then(res => res.json())
+  .then(data => {
+        this.setState({processbarStatus:'10'})
+        console.log(data)
+        let source_ip=data['data'][0]["source_ip"]
+        let source_city=data['data'][0]["source_city"]
+        // let user_id=data['data'][0]["user_id"]
+        userinfo={id:e.userinfo.id,city:source_city,ip:source_ip,other:e.userinfo.other}
+        let items = [];         
+        var itemString=" "
+        var defaultzone=""
+        this.setState({
+          tableColumnState:'basic',
+          
+          tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'valid',userId:userinfo.id,city:source_city}],
+        })
+        if (selectedAnalysisMethod=='Latency_Global_byInstance'){
+          
+            // this.checkLatencyTablebyUser(this.state.userinfo.id)
+            this.createLatencyTestInstance(this.state)
+            
+         
+        }
+        else if(selectedAnalysisMethod=='Latency_Global_byAWSDefaultRegion'){
+          var defulatRegionInfo=[
+            {'zone':'us-east-1','instanceIP':'ec2.us-east-1.amazonaws.com/ping','instanceid': 'ec2.us-east-1.amazonaws.com/ping','instanceCity':'N. Virginia','instanceCountry':'US'},
+            // {'zone':'us-east-2','instanceIP':'ec2.us-east-2.amazonaws.com/ping','instanceid': 'ec2.us-east-2.amazonaws.com/ping','instanceCity':'Ohio','instanceCountry':'US'},
+            {'zone':'us-west-1','instanceIP':'ec2.us-west-1.amazonaws.com/ping','instanceid': 'ec2.us-west-1.amazonaws.com/ping','instanceCity':'N. California','instanceCountry':'US'},
+            // {'zone':'us-west-2','instanceIP':'ec2.us-west-2.amazonaws.com/ping','instanceid': 'ec2.us-west-2.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ca-central-1','instanceIP':'ec2.ca-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            {'zone':'eu-north-1','instanceIP':'ec2.eu-north-1.amazonaws.com/ping','instanceid': 'ec2.eu-north-1.amazonaws.com/ping','instanceCity':'Stockholm','instanceCountry':'Sweden'},
+            // {'zone':'eu-west-3','instanceIP':'ec2.eu-west-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'eu-west-2','instanceIP':'ec2.eu-west-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'eu-west-1','instanceIP':'ec2.eu-west-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'eu-central-1','instanceIP':'ec2.eu-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'eu-south-1','instanceIP':'ec2.eu-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-south-1','instanceIP':'ec2.ap-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            {'zone':'ap-northeast-1','instanceIP':'ec2.ap-northeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-northeast-2','instanceIP':'ec2.ap-northeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-northeast-3','instanceIP':'ec2.ap-northeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-southeast-1','instanceIP':'ec2.ap-southeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-southeast-2','instanceIP':'ec2.ap-southeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'ap-southeast-3','instanceIP':'ec2.ap-southeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            {'zone':'ap-east-1','instanceIP':'ec2.ap-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            {'zone':'sa-east-1','instanceIP':'ec2.sa-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'cn-north-1','instanceIP':'ec2.cn-north-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'cn-northwest-1','instanceIP':'ec2.cn-northwest-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            // {'zone':'me-south-1','instanceIP':'ec2.me-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+            {'zone':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'}
+            
+           
+          ]
+    
+          this.httpspingtest(defulatRegionInfo)
+
+        }
+        else{
+              for (let i = 0; i <data['data'][0]["target"].length; i++) {   
+                  if (i==0){
+                    itemString="(Recommended): "
+                    defaultzone=data['data'][0]["target"][i].zone
+                  }
+                  else{
+                    itemString=" "
+                  }
+                    items.push({
+
+
+                      itemString:itemString , 
+                      id: data['data'][0]["target"][i].zone, 
+                      city: data['data'][0]["target"][i].city,
+                      country:data['data'][0]["target"][i].country,
+                      result:data['data'][0]["target"][i].distance,});   
+              }
+              this.setState({
+                // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
+                countries: items,
+                selectedZone:defaultzone
+              });
+        }
+      
+  })
+  .catch(e => {
+      /*發生錯誤時要做的事情*/
+      console.log(e);
+  })
+  
+  
+
+  
+  this.setState({
+    tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'good',userId:userinfo.id,city:userinfo.city}],
+    tableColumnState:'basic'
+  })
+}
+}
+
 findBestRegion=async (e) =>{
   var user_id=null
   var userinfo={
