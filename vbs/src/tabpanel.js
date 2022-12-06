@@ -55,14 +55,14 @@ export default function BasicTabs(props) {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Table" {...a11yProps(0)} />
-          <Tab label="Graph" {...a11yProps(1)} />
+          <Tab label="Chart" {...a11yProps(1)} />
           <Tab label="Content Dashboard" {...a11yProps(2)} />
           <Tab label="Remote Desktop" {...a11yProps(2)} />
         </Tabs>
       </Box>
-      <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}} value={value} index={0}>
+      <TabPanel style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} value={value} index={0}>
           {/* <ButtonGroup > */}
-                            <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button>
+                            {/* <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button> */}
                             <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
                             <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceStatus(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
                             <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>

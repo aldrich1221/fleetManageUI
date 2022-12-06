@@ -17,6 +17,8 @@ from simple_http_server import PathValue
 import subprocess
 import os
 from subprocess import Popen, PIPE
+import zipfile
+
 
 @route("/")
 def index():
@@ -45,10 +47,18 @@ def my_path_val_ctr2():
         # /TCP
 
         # /IP:192.168.2.5
+    
+    # subprocess.call('dir >> output.txt', shell=True)
     FNULL = open(os.devnull, 'w')    #use this if you want to suppress output to stdout from the subprocess
     
     # args = "./VBSIpSetting.exe /Clear /TCP /IP: " + path_val
-    args = "./VBSIpSetting.exe"
+    with zipfile.ZipFile('./VBSIpSetting.zip', 'r') as z:
+        z.extractall()
+    # subprocess.call(['./VBSIpSetting.zip','x','./VBSIPSettingOutput','-y'], shell=True)
+    # subprocess.call('C:\Windows\System32\powershell.exe Get-Process >> output.txt', shell=True)
+    # subprocess.call('C:\Windows\System32\powershell.exe Get-ChildItem -Path dir >>output.txt', shell=True)
+    # subprocess.call('C:\Windows\System32\powershell.exe Expand-Archive -LiteralPath ./VBSIpSetting.zip -DestinationPath ./VBSIPSettingOutput -Force', shell=True)
+    args = "./VBSIpSetting/VBSIpSetting.exe"
     subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
     return f"<html><body>good</body></html>"
     
@@ -62,11 +72,14 @@ def my_path_val_ctr(path_val=PathValue()):
     # # args = "./VBSIpSetting.exe"
     # # args = "C:/Windows/system32/notepad.exe"
     # subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
-    
-    
+    with zipfile.ZipFile('./VBSIpSetting.zip', 'r') as z:
+        z.extractall()
+    # args = "./VBSIpSetting/VBSIpSetting.exe"
+    args = "./VBSIpSetting/VBSIpSetting.exe /Clear /TCP /IP:" + path_val
+    subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
 
-    subprocess.call('C:\Windows\System32\powershell.exe Expand-Archive -LiteralPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIpSetting.zip -DestinationPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIPSettingOutput -Force', shell=True)
-    return f"<html><body>{path_val}</body></html>"
+    # subprocess.call('C:\Windows\System32\powershell.exe Expand-Archive -LiteralPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIpSetting.zip -DestinationPath C:/Users/aldrich_chen.HTCTAIPEI/downloads/VBSIPSettingOutput -Force', shell=True)
+    # return f"<html><body>{path_val}</body></html>"
 
 
 

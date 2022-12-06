@@ -53,7 +53,7 @@ import {
   setOpenConfigurator,
 } from "../../../context";
 
-function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID }) {
+function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID,usertype }) {
   // const {userinfo} = props;
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
@@ -135,10 +135,13 @@ function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID }) {
           {/* <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} /> */}
           VBS Cloud
         </MDBox>
-        
+        {userinfo.id==null?<div>
         <MDButton  variant="gradient" color="success" style={{textTransform: 'none'}} onClick={() => generateUUID('user')}> I am an enterprise user.</MDButton>
-        <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => generateUUID('developer')}>I am a developer / an administrator</MDButton>
-                
+        <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => generateUUID('developer')}>I am a developer / an administrator.</MDButton>
+        </div>
+        
+        :<div></div>          
+        }
         {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
             <MDBox pr={1}>

@@ -4,9 +4,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import MDButton from "./components/MDButton";
 import { makeStyles, Grid,Container ,ButtonGroup,Button, TextField} from '@material-ui/core';
 import {Table,Styles,tableColumnConfig} from './Table'
 import DefaultLineChart from "./examples/Charts/LineCharts/DefaultLineChart";
+import MDBox from "./components/MDBox";
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -40,9 +42,9 @@ function a11yProps(index) {
   };
 }
 
-export default function BasicTabs(props) {
+export default function BasicTabs_ipsetting(props) {
   console.log(props)
-  const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback, ...other } = props;
+  const { downloadVBSIpSetting,downloadCilentServer,sendMessage,state, ...other } = props;
 
   const [value, setValue] = React.useState(0);
 
@@ -54,47 +56,53 @@ export default function BasicTabs(props) {
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Table" {...a11yProps(0)} />
-          <Tab label="Graph" {...a11yProps(1)} />
-          <Tab label="Content Dashboard" {...a11yProps(2)} />
-          <Tab label="Remote Desktop" {...a11yProps(2)} />
+          <Tab label="using USB" {...a11yProps(0)} />
+          <Tab label="using BlueTooth" {...a11yProps(1)} />
+        
         </Tabs>
       </Box>
       <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}} value={value} index={0}>
-          {/* <ButtonGroup > */}
-                            <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button>
-                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
-                            <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceStatus(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
-                            <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
-                            <Button label="CostTable" onClick={() =>  checkCostUsage(state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
-                            {/* <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button> */}
-      
-                      {/* </ButtonGroup> */}
-            
-          <Styles>
-            <Table columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
-          </Styles>
+        
+     
+                      <MDBox mb={3}>
+                       
+                          {/* <MDButton style={{textTransform: 'none'}}
+                              component="a"
+                              href="https://vbs-user-website-bucket.s3.us-east-1.amazonaws.com/setIP.html"
+                              target="_blank"
+                              rel="noreferrer"
+                              variant="gradient"
+                              color="info"
+                             
+                            >
+                              Browser Trigger and USB( IE only)
+                     
+                     </MDButton> */}
+                     </MDBox>
+                     <MDBox mb={3}>
+                     Step 1 
+                     <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => downloadCilentServer(state.assignedIP)}>download CilentServer</MDButton>
+                     </MDBox>
+                     
+                     <MDBox mb={3}>
+                     Step 2 Execute the ClientServer: server.exe
+                     </MDBox>
+                     <MDBox mb={3}>
+                     Step 3
+                      <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => downloadVBSIpSetting(state.assignedIP)}>download VBSIpSetting</MDButton>
+                      </MDBox>
+                     <MDBox mb={3}>
+                     Step 4 
+        <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => sendMessage(state.assignedIP)}>sendIP</MDButton>
+               
+        </MDBox>
+        <MDBox mb={3}>
+        </MDBox>
       </TabPanel>
-      <TabPanel value={value} index={1}>
-        {/* <DefaultLineChart
-                  color="success"
-                  title="daily sales"
-                  description={
-                    <>
-                      (<strong>+15%</strong>) increase in today sales.
-                    </>
-                  }
-                  date="updated 4 min ago"
-                  chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
-                  
-                /> */}
+      <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}}  value={value} index={1}>
+        BlueTooth
       </TabPanel>
-      <TabPanel value={value} index={2}>
-        Item Three
-      </TabPanel>
-      <TabPanel value={value} index={3}>
-        Item Three
-      </TabPanel>
+     
     </Box>
   );
 }

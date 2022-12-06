@@ -7,23 +7,48 @@
         <script type="text/javascript">
        
         function runProgram()
-        {    var x = document.getElementById("myText").value;
+        
+        {   
+            
+            // if (!ActiveXObject) {
+            //     console.log(document)
+            // alert ("Available only with Internet Explorer.");
+            // return;
+            // }else{
+                
+            
+            var x = document.getElementById("myText").value;
             console.log(x)
             var shell = new ActiveXObject("WScript.Shell");                 
             var appITunes = x
             shell.Run(appITunes);
+            // }
         }     
         function runNotepad()
         {  
+            // if (!ActiveXObject) {
+            //     console.log(document)
+            // alert ("Available only with Internet Explorer.");
+            // return;
+            // }else{
+                
             var shell = new ActiveXObject("WScript.Shell");                 
             var appITunes = "C:/Windows/system32/notepad.exe"
             shell.Run(appITunes);
+            // }
         }  
         function runSetIP()
         {  
+            // if (!ActiveXObject) {
+            //     console.log(document)
+            // alert ("Available only with Internet Explorer.");
+            // return;
+            // }else{
+                
             var shell = new ActiveXObject("WScript.Shell");                 
             var appITunes = "C:/Program Files/VIVE Business Streaming/RRTools/VBSIpSetting/VBSIpSetting.exe"
             shell.Run(appITunes);
+            // }
         }  
         
        
