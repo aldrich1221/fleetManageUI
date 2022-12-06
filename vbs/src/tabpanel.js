@@ -7,6 +7,12 @@ import Box from '@mui/material/Box';
 import { makeStyles, Grid,Container ,ButtonGroup,Button, TextField} from '@material-ui/core';
 import {Table,Styles,tableColumnConfig} from './Table'
 import DefaultLineChart from "./examples/Charts/LineCharts/DefaultLineChart";
+import { Line } from 'react-chartjs-2';
+import {Chart} from './chart.js'
+// import { Chart } from 'react-charts'
+// import { Chart, registerables } from 'chart.js';
+
+// import 'chart.js/auto'; // ADD THIS
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -40,7 +46,107 @@ function a11yProps(index) {
   };
 }
 
+// const data = {
+//     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+//     datasets: [
+//       {
+//         label: 'First dataset',
+//         data: [33, 53, 85, 41, 44, 65],
+//         fill: true,
+//         backgroundColor: 'rgba(75,192,192,0.2)',
+//         borderColor: 'rgba(75,192,192,1)'
+//       },
+//       {
+//         label: 'Second dataset',
+//         data: [33, 25, 35, 51, 54, 76],
+//         fill: false,
+//         borderColor: '#742774',
+//       },
+//     ],
+//   };
+// const labels = [
+//     'January',
+//     'February',
+//     'March',
+//     'April',
+//     'May',
+//     'June',
+//   ];
+//   const data = {
+//     labels: labels,
+//     datasets: [{
+//       label: 'My First dataset',
+//       backgroundColor: 'rgb(255, 99, 132)',
+//       borderColor: 'rgb(255, 99, 132)',
+//       data: [0, 10, 5, 2, 20, 30, 45],
+//     }]
+//   };
+// const config = {
+//     type: 'line',
+//     data,
+//     options: {}
+//   };
+// var  chartdatalist=[12, 19, 3, 5, 2, 3]
+//   const ctx = document.getElementById('myChart');
+//   new Chart(ctx, {
+//     type: 'bar',
+//     data: {
+//       labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+//       datasets: [{
+//         label: '# of Votes',
+//         data: chartdatalist,
+//         borderWidth: 1
+//       }]
+//     },
+//     options: {
+//       scales: {
+//         y: {
+//           beginAtZero: true
+//         }
+//       }
+//     }
+//   });
+
+// function MyChart(props) {
+//     const { data3, ...other } = props;
+
+//     const data = React.useMemo(
+//       () => [
+//         {
+//           label: 'Series 1',
+//           data: [[0, 1], [1, 2], [2, 4], [3, 2], [4, 7]]
+//         },
+//         {
+//           label: 'Series 2',
+//           data: [[0, 3], [1, 1], [2, 5], [3, 6], [4, 4]]
+//         }
+//       ],
+//       []
+//     )
+   
+//     const axes = React.useMemo(
+//       () => [
+//         { primary: true, type: 'linear', position: 'bottom' },
+//         { type: 'linear', position: 'left' }
+//       ],
+//       []
+//     )
+   
+//     const lineChart = (
+//       // A react-chart hyper-responsively and continuously fills the available
+//       // space of its parent element automatically
+//       <div
+//         style={{
+//           width: '400px',
+//           height: '300px'
+//         }}
+//       >
+//         <Chart data={data3} axes={axes} />
+//       </div>
+//     )
+//   }
 export default function BasicTabs(props) {
+    // Chart.register(...registerables);
   console.log(props)
   const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback, ...other } = props;
 
@@ -49,7 +155,41 @@ export default function BasicTabs(props) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+ 
+// //   const ctx = document.getElementById('myChart');
+// //   new Chart(ctx, {
+// //     type: 'bar',
+// //     data: {
+// //       labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+// //       datasets: [{
+// //         label: '# of Votes',
+// //         data: [12, 19, 3, 5, 2, 3],
+// //         borderWidth: 1
+// //       }]
+// //     },
+// //     options: {
+// //       scales: {
+// //         y: {
+// //           beginAtZero: true
+// //         }
+// //       }
+// //     }
+// //   });
 
+//     const data = React.useMemo(
+//     () => [
+//       {
+//         label: 'Series 1',
+//         data: [[0, 1], [1, 2], [2, 4], [3, 2], [4, 7]]
+//       },
+//       {
+//         label: 'Series 2',
+//         data: [[0, 3], [1, 1], [2, 5], [3, 6], [4, 4]]
+//       }
+//     ],
+//     []
+//   )
+  
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -87,7 +227,31 @@ export default function BasicTabs(props) {
                   date="updated 4 min ago"
                   chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
                   
-                /> */}
+             
+             /> */}
+                <Chart></Chart>
+                {/* <MyChart></MyChart> */}
+                {/* <Chart data={data3} axes={axes} /> */}
+                 {/* <canvas id="myChart"></canvas> */}
+                 {/* <Line  data={data} /> */}
+{/* <Line
+  datasetIdKey='id'
+  data={{
+    labels: ['Jun', 'Jul', 'Aug'],
+    datasets: [
+      {
+        id: 1,
+        label: '',
+        data: [5, 6, 7],
+      },
+      {
+        id: 2,
+        label: '',
+        data: [3, 2, 1],
+      },
+    ],
+  }}
+/> */}
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three

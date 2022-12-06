@@ -1828,8 +1828,12 @@ findBestRegion_v2=async (e) =>{
     
   }
   const latencydatalist=await this.checkLatencyTablebyCity(e)
+  var itemString 
+  var defaultzone
+  var items=[]
   if (latencydatalist.length!=0){
-                for (let i = 0; i <latencydatalist.length; i++) {   
+                for (let i = 0; i <latencydatalist.length; i++) {  
+                 
                   if (i==0){
                     itemString="(Recommended): "
                     defaultzone=latencydatalist[i].zone
