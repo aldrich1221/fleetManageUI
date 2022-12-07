@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import React, {Component,useState, useEffect,useMemo } from 'react';
 import { makeStyles, Grid,Box,Container ,ButtonGroup,Button, TextField} from '@material-ui/core';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import { flexbox } from '@material-ui/system';
 import styled from 'styled-components'
 import uuid from 'react-uuid';
@@ -13,6 +16,10 @@ import { InputGroup, FormControl, Input } from "react-bootstrap";
 import Plot from 'react-plotly.js';
 import { sizing } from '@material-ui/system/';
 import GoogleMap from "google-maps-react-markers"
+
+import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
+import Checkboxes from './appidcheckbox.js'
 
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
@@ -28,6 +35,7 @@ import GoogleMap from "google-maps-react-markers"
 // import { promisify } from 'util';
 ////////////////////////////////////////////////
 import Progressbar from './Progress_bar';
+import CircularProgressWithLabel from './CircularProgressWithLabel.js'
 import Card from "@mui/material/Card";
 import BasicTabs from './tabpanel';
 import BasicTabs_ipsetting from './tabpanel_ipsetting';
@@ -50,6 +58,7 @@ import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStati
 // import DashboardNavbar from "./examples/Navbars/DashboardNavbar";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AWS from 'aws-sdk';
+import { touchRippleClasses } from '@mui/material';
 // import fsreact from 'fs-react';
 
 const axios = require('axios');
@@ -61,13 +70,13 @@ const APIs={
   'CostUsage':'https://vgwh8al5v1.execute-api.us-east-1.amazonaws.com/prod/v1',
   'Metrics':'https://fzghypjvb1.execute-api.us-east-1.amazonaws.com/prod/v1',
   // 'LatencyTest':'https://9prtgwbcnf.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'LatencyTest':'https://y2golzdfea.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'LatencyTest':'https://us1ubzsdg8.execute-api.us-east-1.amazonaws.com/prod/v1',
   'Test': 'https://9prtgwbcnf.execute-api.us-east-1.amazonaws.com/prod/v1',
   
   'SendCommand':'https://sf43cgtn5g.execute-api.us-east-1.amazonaws.com/prod/v1',
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'EC2Rescue':"https://hnjqfmhb5d.execute-api.us-east-1.amazonaws.com/prod/v1",
-  'Network':"https://58scuxowgk.execute-api.us-east-1.amazonaws.com/prod/v1"
+  'EC2Rescue':"https://r9e89v6dml.execute-api.us-east-1.amazonaws.com/prod/v1",
+  'Network':"https://uhsyifylcd.execute-api.us-east-1.amazonaws.com/prod/v1"
     
 }
 
@@ -216,7 +225,7 @@ class App extends Component {
       tableDataState:[{'firstName':'None'}],
       tableSelctedItem:[],
 
-      userinfo: {ip:null,city:null,id:null,name:null,type:null,other:{'WeeklyCostSum':'','DailyCostList':[],'instanceQuota':''}},
+      userinfo: {ip:null,city:null,id:null,name:null,type:null,other:{'WeeklyCostSum':'','DailyCostList':[],'instanceQuota':'','useremail':'','userAMI':''}},
       suitableZones:[],
       assignedIP:'',
       countries: [],
@@ -235,6 +244,7 @@ class App extends Component {
       latencyResult:[{}],
       latencyTestStatus:'NoIPs',
       pingTimeState:0,
+      checkedSpotInstanceConfig:false,
       // tableColumnState:'basic',
       tableDataState:[],
       tableSelctedItem:[],
@@ -244,6 +254,14 @@ class App extends Component {
       urlString:'',
       latencyTestInstanceIds2:[],
       latencyTestInstanceIds:[],
+      
+
+      chartdata:[],
+      chartlabel:[],
+
+      buttonclick_createEC2:false,
+      buttonclick_findbestregion:false,
+      buttonclick_statusmanage:false,
 
       processbarStatus:'0',
       instanceType: [
@@ -299,10 +317,18 @@ class App extends Component {
     this.getUserInfo=this.getUserInfo.bind(this);
     this.checkInstanceTablebyUser=this.checkInstanceTablebyUser.bind(this);
     this.checkLatencyTablebyCity=this.checkLatencyTablebyCity.bind(this);
-
+    this.handleChangeSwithSpotInstanceConfig=this.handleChangeSwithSpotInstanceConfig.bind(this);
   }
 
-
+  handleChangeSwithSpotInstanceConfig=()=>{
+    if (this.state.checkedSpotInstanceConfig){
+      this.setState({checkedSpotInstanceConfig:false})
+    }else{
+      this.setState({checkedSpotInstanceConfig:true})
+    }
+   
+   
+  }
   sendMessage=(ip)=>{
     var url="http://localhost:9090/setip2"
     fetch(url)
@@ -360,7 +386,7 @@ class App extends Component {
     
     var url=APIs['Network']+'/user/'+userid+'/ec2/*'
     const requestOptions = {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
@@ -415,20 +441,20 @@ addLatencyDB=async (data) =>{
 }
 myPingFunc4 =async (fqdn) =>{
 
-  var NB_ITERATIONS = 4; // number of loop iterations
-  var MAX_ITERATIONS = 5; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
+  var NB_ITERATIONS = 1; // number of loop iterations
+  var MAX_ITERATIONS = 2; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
   var TIME_PERIOD = 1000; // 1000 ms between each ping
   var i = 0;
   var over_flag = 0;
   var time_cumul = 0;
   var REQUEST_TIMEOUT = 15000;
   var TIMEOUT_ERROR = 0;
-  
+  var availableFlag=false;
   var AVELatency=null
   // document.getElementById('result').innerHTML = "HTTP ping for " + fqdn + "</br>";
   console.log(" myPingFunc2 Click")
   // var ping_loop = setInterval(function(pingTimeGlobal) {
-  while(i<6){
+  while(i<3){
           await timer(1000)
           // let's change non-existent URL each time to avoid possible side effect with web proxy-cache software on the line
           // var url = "http://" + fqdn + "/a30Fkezt_77" + Math.random().toString(36).substring(7);
@@ -463,7 +489,17 @@ myPingFunc4 =async (fqdn) =>{
               ping.open("GET", url, true);
               // ping.setRequestHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
               
+              ping.onload = () => {
+                if (ping.readyState === ping.DONE) {
+                  if (ping.status === 200) {
+                    console.log(ping.response);
+                    console.log(ping.responseText);
+                    availableFlag=true
+                  }
+                }
+              };
               ping.send();
+            
   
           }
   
@@ -491,8 +527,10 @@ myPingFunc4 =async (fqdn) =>{
         }
 
       console.log("AVELatency",avg_time,AVELatency,pingTimeGlobal)
-      this.setState({pingTimeState:avg_time})
-      return avg_time
+      console.log("Check latencytest instance available",availableFlag)
+      // this.setState({pingTimeState:avg_time})
+      // return avg_time,availableFlag
+      return availableFlag
 }
 
 httppingtest=async (data) =>{
@@ -792,8 +830,49 @@ wait(ms){
    }
  }
   
+
+ createEC2_v2(e){
+  console.log(e)
+  this.setState({buttonclick_createEC2:true})
+  var selectedZone=e.selectedZone
+  var selectedInstanceType=e.selectedInstanceType
+  
+  console.log(selectedZone,selectedInstanceType)
+  var userid=e.userinfo.id
+  var userAMI=e.userinfo.other.userAMI
+  var appids=e.selectedAppIds
+  
+  var url=APIs['CreateEC2']+'?ec2zone='+selectedZone+'&ec2type='+selectedInstanceType+'&userid='+userid
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      "userAMI": userAMI,
+      "appids":appids
+  })
+  };
+
+
+  console.log("url",url)
+  fetch(url,requestOptions)
+    .then(res => res.json())
+    .then(data => {
+          /*接到request data後要做的事情*/
+          console.log(data)
+  
+          this.setState({
+            createdInstanceInfo:{'data':data['data'][0]}
+          })
+    })
+    .catch(e => {
+        /*發生錯誤時要做的事情*/
+        console.log(e);
+    })
+  }
+
 createEC2(e){
 console.log(e)
+this.setState({buttonclick_createEC2:true})
 var selectedZone=e.selectedZone
 var selectedInstanceType=e.selectedInstanceType
 console.log(selectedZone,selectedInstanceType)
@@ -915,9 +994,9 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
     })
   }
   
-  checkInstanceStatus(e){
+  checkInstanceStatus(e,userid){
     var datalist=e.tableDataState
-    var userid=e.userinfo.id
+    // var userid=e.userinfo.id
     console.log("=========call  checkInstanceStatus=========== ")
     var ec2ids=[]
     var regions=[]
@@ -1176,8 +1255,8 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
     
     
   }
-  checkInstanceTablebyUser(e){
-    var userid=e.userinfo.id
+  checkInstanceTablebyUser(userid){
+    // var userid=e.userinfo.id
     var datalist=[]
     var url=APIs['QueryDB']+'?tableName=VBS_Instances_Information&userid='+userid
     fetch(url,{method:"GET"})
@@ -1463,10 +1542,11 @@ latencyResult(e){
   this.checkLatencyTablebyUser(e.userinfo.id)
 }
 deleteSelectedEC2(e,action){
+  this.setState({buttonclick_statusmanage:true})
   console.log("Delete",e.tableSelctedItem)
   for (let i = 0; i < e.tableSelctedItem.length; i++) {   
     this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
-  
+
   }
   
   
@@ -1514,26 +1594,33 @@ handleClickPing=async (e) =>{
   }
 
 createLatencyTestInstance=async (e) =>{
+  console.log("create Latency Instance")
+  console.log(e)
   // var url=APIs['LatencyTest']+'?userid='+e.userinfo.id
-  // var url1=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/init'
-  // var url2=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/check'
-  // var url3=APIs['LatencyTest']+'/user/'+e.userinfo.id+'/action/delete'
-  var url1=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=init'
-  var url2=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=check'
-  var url3=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=delete'
+  var url1=APIs['LatencyTest']+'/user/developer-123456789/action/init'
+  var url2=APIs['LatencyTest']+'/user/developer-123456789/action/check'
+  var url3=APIs['LatencyTest']+'/user/developer-123456789/action/delete'
+  // var url1=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=init'
+  // var url2=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=check'
+  // var url3=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=delete'
 
 
   const requestOptions1 = {
-    method: 'GET',
+    method: 'POST',
     headers: { 
       'Content-Type': 'application/json' ,
       'Authorization':'allow',
-      // 'authorizationToken':'allow'
+      'authorizationToken':'allow'
+
     },
+    body: JSON.stringify({ 
+      'source_ip':e.userinfo.ip
+  })
     }
 
   let RegionInfo=[]
   this.setState({processbarStatus:'20'})
+  console.log("requestOptions1",requestOptions1)
   const response_from_init = await fetch(url1,requestOptions1)
   const data = await response_from_init.json();
   // .then(res => res.json())
@@ -1638,33 +1725,49 @@ createLatencyTestInstance=async (e) =>{
 
   console.log("========Check latency test Instance Response======")
   
-
   var Flag=true
+  var begintime= Date.now();
   while(Flag){
     Flag=false
-    const requestOptions2 = {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json' ,
-        'Authorization':'allow'
-      },
-      body: JSON.stringify({ 
-        'instanceData':data[0]["data"][0]["instanceData"]
-    })}
-    console.log(requestOptions2)
-  
-      await timer(3000)
-      const response = await fetch(url2,requestOptions2 )
-      const data2 = await response.json();
-      console.log(data2)
-      for (let i = 0; i < data2[0]["data"][0]["instanceData"]['InstanceStatuses'].length; i++) {   
-        if (data2[0]["data"][0]["instanceData"]['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
-          Flag=true
-        }
-        // if (data[0]['instanceData']['InstanceStatuses'][i]['SystemStatus']['Status']!='ok'){
-        //   Flag=true
-        // }
+    // var instanceIPsList=[]
+    for (let i = 0; i < data[0]['data'][0]['instanceData'].length; i++) {  
+      var url='https://'+data[0]['data'][0]['instanceData'].instanceIP+'nip.io'
+      var flag=await this.myPingFunc4(url)
+      if(flag==false){Flag=true}
       }
+    var test_time = Date.now() - begintime;
+    if(test_time>30000){break;}
+      
+  }
+  // var Flag=true
+  // while(Flag){
+  //   Flag=false
+  //   const requestOptions2 = {
+  //     method: 'POST',
+  //     headers: { 
+  //       'Content-Type': 'application/json' ,
+  //       'Authorization':'allow',
+  //       'authorizationToken':'allow'
+  //     },
+  //     body: JSON.stringify({ 
+  //       'instanceData':data[0]["data"][0]["instanceData"],
+  //       'source_ip':e.userinfo.ip
+  //   })}
+  //   console.log(requestOptions2)
+  
+  //     await timer(3000)
+  //     const response = await fetch(url2,requestOptions2 )
+  //     const data2 = await response.json();
+  //     console.log("check Status response")
+  //     console.log(data2)
+  //     for (let i = 0; i < data2[0]["data"][0]["instanceData"]['InstanceStatuses'].length; i++) {   
+  //       if (data2[0]["data"][0]["instanceData"]['InstanceStatuses'][i]['InstanceStatus']['Status']!='ok'){
+  //         Flag=true
+  //       }
+  //       // if (data[0]['instanceData']['InstanceStatuses'][i]['SystemStatus']['Status']!='ok'){
+  //       //   Flag=true
+  //       // }
+  //     }
       // fetch(url2,requestOptions2 )
       // .then(res => res.json())
       // .then(data => {
@@ -1681,7 +1784,7 @@ createLatencyTestInstance=async (e) =>{
       //   console.log(Flag)
 
       // })
-  }
+  // }
   this.httppingtest(data[0]['data'][0]['instanceData'])
   // console.log("outside fetch")
   // console.log(instanceData)
@@ -1726,13 +1829,17 @@ getUserInfo(userid,type){
         //     displayTable:data['data'][0]['data']
          
         // });
-        console.log("==========VBS_Enterprise_Info=======")
-        console.log(data)
-        console.log("==========VBS_Enterprise_Info2=======")
-        // console.log(data[0]['userinfo'])
-        var instanceQuota=data['data'][0]['userinfo']['instanceQuota']
-        var costarray=data['data'][0]['userinfo']['cost']['ResultsByTime']
-        var weeklycosts=[]
+      console.log("==========VBS_Enterprise_Info=======")
+      console.log(data)
+      console.log("==========VBS_Enterprise_Info2=======")
+      // console.log(data[0]['userinfo'])
+      var instanceQuota=data['data'][0]['userinfo']['instanceQuota']
+      var costarray=data['data'][0]['userinfo']['cost']['ResultsByTime']
+      var username=data['data'][0]['userinfo']['username']
+      var useremail=data['data'][0]['userinfo']['email']
+      var userAMI=data['data'][0]['userinfo']['userAMI']
+      var weeklycosts=[]
+      var weeklycostlabels=[]
         function convert_to_float(a) {
          
           // Type conversion
@@ -1741,20 +1848,26 @@ getUserInfo(userid,type){
            
           // Return float value
           return floatValue;
-      }
+            }
       console.log(instanceQuota)
       console.log(costarray)
         for (let i = 0; i < costarray.length; i++) {
           weeklycosts.push(convert_to_float(costarray[i]["Total"]["AmortizedCost"]["Amount"]))
+          weeklycostlabels.push(costarray[i]["TimePeriod"]["End"])
         }
         var sum = weeklycosts.reduce((a, b) => a + b, 0);
         var otherinfo={
           "WeeklyCostSum":sum,
           "DailyCostList":weeklycosts,
-          "instanceQuota":instanceQuota
+          "DailyCostLabelList":weeklycostlabels,
+          "instanceQuota":instanceQuota,
+          "useremail":useremail,
+          "userAMI":userAMI
         }
         this.setState({
-          userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":otherinfo}
+          userinfo:{id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo},
+          chartdata:weeklycosts,
+          chartlabel:weeklycostlabels
         })
         
         
@@ -1763,8 +1876,8 @@ getUserInfo(userid,type){
       /*發生錯誤時要做的事情*/
       console.log(e);
   })
-  this.checkInstanceTablebyUser(this.state)
-  this.checkInstanceStatus(this.state)
+  this.checkInstanceTablebyUser(userid)
+  this.checkInstanceStatus(this.state,userid)
 
 
 
@@ -1776,7 +1889,8 @@ generateUUID(type){
   var name=null
  
   if (type=='user'){
-    userid=uuid()
+    // userid=uuid()
+    userid="2a27adb1-668e-dc89-6119-58eefdeccca2"
     name="Enterprise User"
     
   }
@@ -1819,7 +1933,60 @@ deleteLatencyTestInstance(){
 }
 
 
+defaultRegionSelect=async (e) =>{
+  var url=APIs['AnalysisIP']+'?routePolicy=Geolocation_Global&userid='+e.userinfo.id
+  fetch(url,{method:"GET"})
+  .then(res => res.json())
+  .then(data => {
+        this.setState({processbarStatus:'10'})
+        console.log(data)
+        let source_ip=data['data'][0]["source_ip"]
+        let source_city=data['data'][0]["source_city"]
+        // let user_id=data['data'][0]["user_id"]
+        var userinfo={id:e.userinfo.id,city:source_city,ip:source_ip,other:e.userinfo.other}
+        let items = [];         
+        var itemString=" "
+        var defaultzone=""
+
+        this.setState({
+          tableColumnState:'basic',
+          tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'valid',userId:userinfo.id,city:source_city}],
+        })
+      
+      
+              for (let i = 0; i <1; i++) {   
+                  if (i==0){
+                    itemString="(Recommended): "
+                    defaultzone=data['data'][0]["target"][i].zone
+                  }
+                  else{
+                    itemString=" "
+                  }
+                    items.push({
+
+
+                      itemString:itemString , 
+                      id: data['data'][0]["target"][i].zone, 
+                      city: data['data'][0]["target"][i].city,
+                      country:data['data'][0]["target"][i].country,
+                      result:data['data'][0]["target"][i].distance,});   
+              }
+              this.setState({
+                // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
+                countries: items,
+                selectedZone:defaultzone
+              });
+        
+      
+  })
+  .catch(e => {
+      /*發生錯誤時要做的事情*/
+      console.log(e);
+  })
+}
+
 findBestRegion_v2=async (e) =>{
+  this.setState({buttonclick_findbestregion:true})
   var user_id=null
   var userinfo={
     id:e.userinfo.id,
@@ -1827,10 +1994,14 @@ findBestRegion_v2=async (e) =>{
     ip:null
     
   }
-  const latencydatalist=await this.checkLatencyTablebyCity(e)
+  // const latencydatalist=await this.checkLatencyTablebyCity(e)
+  const latencydatalist=[]
+  console.log('latencydatalist')
+  console.log(latencydatalist)
   var itemString 
   var defaultzone
   var items=[]
+  
   if (latencydatalist.length!=0){
                 for (let i = 0; i <latencydatalist.length; i++) {  
                  
@@ -1855,111 +2026,16 @@ findBestRegion_v2=async (e) =>{
                 countries: items,
                 selectedZone:defaultzone
               });
+              this.setState({buttonclick_findbestregion:false})
 
   }else{
   
   
-  var selectedAnalysisMethod=e.selectedAnalysisMethod
+      var selectedAnalysisMethod=e.selectedAnalysisMethod
 
-
-
-  var url=APIs['AnalysisIP']+'?routePolicy='+selectedAnalysisMethod+'&userid='+e.userinfo.id
-  fetch(url,{method:"GET"})
-  .then(res => res.json())
-  .then(data => {
-        this.setState({processbarStatus:'10'})
-        console.log(data)
-        let source_ip=data['data'][0]["source_ip"]
-        let source_city=data['data'][0]["source_city"]
-        // let user_id=data['data'][0]["user_id"]
-        userinfo={id:e.userinfo.id,city:source_city,ip:source_ip,other:e.userinfo.other}
-        let items = [];         
-        var itemString=" "
-        var defaultzone=""
-        this.setState({
-          tableColumnState:'basic',
-          
-          tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'valid',userId:userinfo.id,city:source_city}],
-        })
-        if (selectedAnalysisMethod=='Latency_Global_byInstance'){
-          
-            // this.checkLatencyTablebyUser(this.state.userinfo.id)
-            this.createLatencyTestInstance(this.state)
-            
-         
-        }
-        else if(selectedAnalysisMethod=='Latency_Global_byAWSDefaultRegion'){
-          var defulatRegionInfo=[
-            {'zone':'us-east-1','instanceIP':'ec2.us-east-1.amazonaws.com/ping','instanceid': 'ec2.us-east-1.amazonaws.com/ping','instanceCity':'N. Virginia','instanceCountry':'US'},
-            // {'zone':'us-east-2','instanceIP':'ec2.us-east-2.amazonaws.com/ping','instanceid': 'ec2.us-east-2.amazonaws.com/ping','instanceCity':'Ohio','instanceCountry':'US'},
-            {'zone':'us-west-1','instanceIP':'ec2.us-west-1.amazonaws.com/ping','instanceid': 'ec2.us-west-1.amazonaws.com/ping','instanceCity':'N. California','instanceCountry':'US'},
-            // {'zone':'us-west-2','instanceIP':'ec2.us-west-2.amazonaws.com/ping','instanceid': 'ec2.us-west-2.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ca-central-1','instanceIP':'ec2.ca-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            {'zone':'eu-north-1','instanceIP':'ec2.eu-north-1.amazonaws.com/ping','instanceid': 'ec2.eu-north-1.amazonaws.com/ping','instanceCity':'Stockholm','instanceCountry':'Sweden'},
-            // {'zone':'eu-west-3','instanceIP':'ec2.eu-west-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'eu-west-2','instanceIP':'ec2.eu-west-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'eu-west-1','instanceIP':'ec2.eu-west-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'eu-central-1','instanceIP':'ec2.eu-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'eu-south-1','instanceIP':'ec2.eu-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-south-1','instanceIP':'ec2.ap-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            {'zone':'ap-northeast-1','instanceIP':'ec2.ap-northeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-northeast-2','instanceIP':'ec2.ap-northeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-northeast-3','instanceIP':'ec2.ap-northeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-southeast-1','instanceIP':'ec2.ap-southeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-southeast-2','instanceIP':'ec2.ap-southeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'ap-southeast-3','instanceIP':'ec2.ap-southeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            {'zone':'ap-east-1','instanceIP':'ec2.ap-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            {'zone':'sa-east-1','instanceIP':'ec2.sa-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'cn-north-1','instanceIP':'ec2.cn-north-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'cn-northwest-1','instanceIP':'ec2.cn-northwest-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            // {'zone':'me-south-1','instanceIP':'ec2.me-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-            {'zone':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'}
-            
-           
-          ]
-    
-          this.httpspingtest(defulatRegionInfo)
-
-        }
-        else{
-              for (let i = 0; i <data['data'][0]["target"].length; i++) {   
-                  if (i==0){
-                    itemString="(Recommended): "
-                    defaultzone=data['data'][0]["target"][i].zone
-                  }
-                  else{
-                    itemString=" "
-                  }
-                    items.push({
-
-
-                      itemString:itemString , 
-                      id: data['data'][0]["target"][i].zone, 
-                      city: data['data'][0]["target"][i].city,
-                      country:data['data'][0]["target"][i].country,
-                      result:data['data'][0]["target"][i].distance,});   
-              }
-              this.setState({
-                // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
-                countries: items,
-                selectedZone:defaultzone
-              });
-        }
-      
-  })
-  .catch(e => {
-      /*發生錯誤時要做的事情*/
-      console.log(e);
-  })
-  
-  
-
-  
-  this.setState({
-    tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'good',userId:userinfo.id,city:userinfo.city}],
-    tableColumnState:'basic'
-  })
-}
+      this.createLatencyTestInstance(this.state)
+      this.setState({buttonclick_findbestregion:false})
+    }
 }
 
 findBestRegion=async (e) =>{
@@ -2217,7 +2293,8 @@ LaunchApp() {
   }
 
   downloadFlowLogs=async()=>{
-   
+    
+
     fetch('https://vbs-tempfile-bucket-htc.s3.amazonaws.com/i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0645Z_3cb900b2.log.gz', {
       method: 'GET',
       headers: {
@@ -2302,10 +2379,11 @@ LaunchApp() {
     if (this.state.latencyTestInstanceIds.length>0){
       this.deleteLatencyTestInstance()
     }
+    
     // this.check()
   }
   componentDidMount() {
-    
+   
     // this.connect();
   }
   timeout = 250; 
@@ -2365,6 +2443,9 @@ LaunchApp() {
     console.log('table data',data)
     const columns = tableColumnConfig[this.state.tableColumnState]
     const { userHelpString,analysisMethods,rescueActions,countries,selectedZone,userinfo ,selectedinstanceIdString,instanceType,latencyTable,displayTable,selectedInstanceType, resultDisplayString,selectedInstanceId} = this.state;
+    const {buttonclick_createEC2,buttonclick_findbestregion,buttonclick_statusmanage}=this.state
+    const {chartdata,chartlabel}=this.state
+    const {checkedSpotInstanceConfig}=this.state
     const userinfoString = 'Hi '+`${this.state.userinfo.id}`
     const createdInstanceInfoString = "ID:"+`${this.state.createdInstanceInfo.data.instance_id}`+" IP: "+`${this.state.createdInstanceInfo.data.instance_ip}`+" Region: "+`${this.state.createdInstanceInfo.data.instance_region}`;
     let countriesList =countries.map((item, i) => {
@@ -2414,9 +2495,10 @@ LaunchApp() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="dark"
-               
+                other={userinfo.other.useremail}
+                other2={userinfo.other.userAMI}
                 title={userinfo.id}
-                count={"VBS Developer"}
+                count={userinfo.name}
                 percentage={{
                   color: "success",
                   amount: userinfo.ip,
@@ -2435,7 +2517,8 @@ LaunchApp() {
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
-                
+                other={""}
+                other2={""}
                 title="Running Instance / Registrated Instance"
                 count={userinfo.other.instanceQuota.toString()}
                 percentage={{
@@ -2482,7 +2565,8 @@ LaunchApp() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="success"
-               
+                other={""}
+                other2={""}
                 title="APP Numbers"
                 count="34k"
                 percentage={{
@@ -2498,7 +2582,8 @@ LaunchApp() {
           
               <ComplexStatisticsCard
                 color="primary"
-                
+                other={""}
+                other2={""}
                 title="Weekly Cost "
                 count={userinfo.other.WeeklyCostSum.toString()}
                 percentage={{
@@ -2544,31 +2629,43 @@ LaunchApp() {
                 
                 
                 </MDBox>
-                Find the best region
+                Find the best region {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
                 <MDBox mb={3}>
                 
-                <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion(this.state)}>Analyze Regions</MDButton>
+                <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion_v2(this.state)}>Analyze Regions</MDButton>
                
-                <select onChange={this.selectAnalysisMethod}>
+                {/* <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
-                          </select>
+                          </select> */}
                           <Grid item xs={4} md={6} lg={4}>
+                            
                          
-                            <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} />
+                            {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
                         </Grid>
                 </MDBox>        
-                Create instance
+                Create instance  {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>}
+                          
                           <MDBox mb={3}>
                   
-                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
-               
-
                           <select onChange={this.selectCountry}>
                             {countriesList}
                           </select>
                           <select onChange={this.selectInstanceType}>
                             {instanceTypeList}
                           </select>
+                          <Checkboxes/>
+
+                          On-Demand
+                          <Switch
+                            checked={checkedSpotInstanceConfig}
+                            onChange={this.handleChangeSwithSpotInstanceConfig}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                          />
+                          Spot
+                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
+                 
+
+                          
                   </MDBox>
                   Assign IP
                           <MDBox mb={3}>
@@ -2582,7 +2679,8 @@ LaunchApp() {
                      {/* <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
                 */}
                      </MDBox>
-                     Instance Status Manage
+                     Instance Status Manage {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
+                          
                      <MDBox mb={3}>
                      <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
@@ -2607,7 +2705,7 @@ LaunchApp() {
                 /> */}
                     <Card sx={{ height: "100%" }} sytle={{sizing, maxHeight: 300}}>
                 <MDBox padding="1rem">
-                <BasicTabs   checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
+                <BasicTabs  chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
                  {/* <div style={{overflow:'scroll'}}> */}
                       {/* <ButtonGroup >

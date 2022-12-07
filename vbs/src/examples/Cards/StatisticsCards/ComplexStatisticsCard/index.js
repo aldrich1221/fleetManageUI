@@ -25,7 +25,7 @@ import Icon from "@mui/material/Icon";
 import MDBox from "../../../../components/MDBox";
 import MDTypography from "../../../../components/MDTypography";
 
-function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
+function ComplexStatisticsCard({ color, title, count, percentage, icon ,other,other2}) {
   return (
     <Card>
       <MDBox display="flex" justifyContent="space-between" pt={1} px={2}>
@@ -66,6 +66,12 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
           </MDTypography>
           &nbsp;{percentage.label}
         </MDTypography>
+        <MDTypography variant="button" fontWeight="light" color="text">
+            {other}
+          </MDTypography>
+          <MDTypography variant="button" fontWeight="light" color="text">
+            {other2}
+          </MDTypography>
       </MDBox>
     </Card>
   );

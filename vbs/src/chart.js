@@ -5,13 +5,13 @@ import LineChart from "./chart-components/LineChart";
 // import PieChart from "./chart-components/PieChart";
 import { UserData } from "./Data";
 
-export function Chart() {
-  const [userData, setUserData] = useState({
-    labels: UserData.map((data) => data.year),
+export function Chart({labels,datas}) {
+  const userdata={
+    labels: labels,
     datasets: [
       {
-        label: "Users Gained",
-        data: UserData.map((data) => data.userGain),
+        label: "Daily Cost",
+        data: datas,
         backgroundColor: [
           "rgba(75,192,192,1)",
           "#ecf0f1",
@@ -23,8 +23,26 @@ export function Chart() {
         borderWidth: 2,
       },
     ],
-  });
-
+  }
+  // const [userData, setUserData] = useState({
+  //   labels: labels,
+  //   datasets: [
+  //     {
+  //       label: "Users Gained",
+  //       data: datas,
+  //       backgroundColor: [
+  //         "rgba(75,192,192,1)",
+  //         "#ecf0f1",
+  //         "#50AF95",
+  //         "#f3ba2f",
+  //         "#2a71d0",
+  //       ],
+  //       borderColor: "black",
+  //       borderWidth: 2,
+  //     },
+  //   ],
+  // });
+  console.log(userdata)
   // IF YOU SEE THIS COMMENT: I HAVE GOOD EYESIGHT
 
   return (
@@ -33,7 +51,7 @@ export function Chart() {
         <BarChart chartData={userData} />
       </div> */}
       <div style={{ width: 700 }}>
-        <LineChart chartData={userData} />
+        <LineChart chartData={userdata} />
       </div>
       {/* <div style={{ width: 700 }}>
         <PieChart chartData={userData} />

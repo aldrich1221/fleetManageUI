@@ -149,13 +149,24 @@ export default function BasicTabs(props) {
     // Chart.register(...registerables);
   console.log(props)
   const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback, ...other } = props;
+  const {  chartdata,chartlabel} = props;
 
   const [value, setValue] = React.useState(0);
+  const [selectedInstance, setSelectedInstance] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
- 
+  // selectInstance = (e) => {
+  //   let idx = e.target.selectedIndex;
+  //   let dataset = e.target.options[idx].dataset;
+
+  //   setSelectedInstance(e.target.options[idx].value);
+  //   // console.log('Choose zone : ',idx,e.target.options[idx].value);
+  //   // this.setState({selected:e.target.options[idx].value, selectedServerIP:e.target.options[idx].serverIP})
+  //   // this.setState({selected:e.target.options[idx].value, selectedServerIP:e.target.options[idx].serverIP})
+   
+  // }
 // //   const ctx = document.getElementById('myChart');
 // //   new Chart(ctx, {
 // //     type: 'bar',
@@ -203,8 +214,8 @@ export default function BasicTabs(props) {
       <TabPanel style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} value={value} index={0}>
           {/* <ButtonGroup > */}
                             {/* <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button> */}
-                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
-                            <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceStatus(state)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
+                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
+                            <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
                             <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
                             <Button label="CostTable" onClick={() =>  checkCostUsage(state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
                             {/* <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button> */}
@@ -216,42 +227,10 @@ export default function BasicTabs(props) {
           </Styles>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        {/* <DefaultLineChart
-                  color="success"
-                  title="daily sales"
-                  description={
-                    <>
-                      (<strong>+15%</strong>) increase in today sales.
-                    </>
-                  }
-                  date="updated 4 min ago"
-                  chart={{"labels":["A","B","C"],"datasets":{ label: "Mobile apps", data: [50, 40, 300] }}}
-                  
-             
-             /> */}
-                <Chart></Chart>
-                {/* <MyChart></MyChart> */}
-                {/* <Chart data={data3} axes={axes} /> */}
-                 {/* <canvas id="myChart"></canvas> */}
-                 {/* <Line  data={data} /> */}
-{/* <Line
-  datasetIdKey='id'
-  data={{
-    labels: ['Jun', 'Jul', 'Aug'],
-    datasets: [
-      {
-        id: 1,
-        label: '',
-        data: [5, 6, 7],
-      },
-      {
-        id: 2,
-        label: '',
-        data: [3, 2, 1],
-      },
-    ],
-  }}
-/> */}
+     
+                <Chart datas={chartdata} labels={chartlabel}></Chart>
+              
+
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three
