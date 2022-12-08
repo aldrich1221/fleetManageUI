@@ -5,46 +5,90 @@ import { useTable,usePagination, useRowSelect } from 'react-table'
 
 
 export const tableColumnConfig={
-    'basic':[
+    // 'basic':[
+    //     {
+    //       Header: 'Name',
+    //       columns: [
+    //         {
+    //           Header: 'First Name',
+    //           accessor: 'firstName',
+    //         },
+    //         {
+    //           Header: 'Last Name',
+    //           accessor: 'lastName',
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       Header: 'Current Info',
+    //       columns: [
+    //         {
+    //           Header: 'Visits',
+    //           accessor: 'visits',
+    //         },
+    //         {
+    //           Header: 'Status',
+    //           accessor: 'status',
+    //         },
+    //         {
+    //           Header: 'User ID',
+    //           accessor: 'userId',
+    //         },
+    //         {
+    //            Header: 'City',
+    //            accessor: 'city',
+    //         }
+    //       ],
+    //     },
+    //   ],
+    // 
+    
+    'instanceTable':[
         {
- 
- 
- 
-          Header: 'Name',
+          Header: 'Basic Information',
           columns: [
-            {
-              Header: 'First Name',
-              accessor: 'firstName',
-            },
-            {
-              Header: 'Last Name',
-              accessor: 'lastName',
-            },
-          ],
-        },
-        {
-          Header: 'Current Info',
-          columns: [
-            {
-              Header: 'Visits',
-              accessor: 'visits',
-            },
-            {
-              Header: 'Status',
-              accessor: 'status',
-            },
             {
               Header: 'User ID',
               accessor: 'userId',
             },
             {
-               Header: 'City',
-               accessor: 'city',
-            }
+              Header: 'Instance ID',
+              accessor: 'instanceId',
+            },
+            {
+                Header: 'Instance IP',
+                accessor: 'instanceIp',
+              },
+            {
+                Header: 'Zone',
+                accessor: 'zone',
+              },
+          ],
+        },
+        {
+          Header: 'Metric',
+          columns: [
+            {
+              Header: 'CPUUtilization',
+              accessor: 'cpuUtilization',
+            },
+           
+            {
+              Header: 'Instance State',
+              accessor: 'status',
+            },
+            {
+              Header: 'Instance Status',
+              accessor: 'instanceStatus',
+            },
+            {
+              Header: 'System Status',
+              accessor: 'systemStatus',
+            },
           ],
         },
       ],
-    'instanceTable':[
+      'instanceDetailTable':[
         {
           Header: 'Basic Information',
           columns: [

@@ -208,7 +208,7 @@ export default function BasicTabs(props) {
           <Tab label="Table" {...a11yProps(0)} />
           <Tab label="Chart" {...a11yProps(1)} />
           <Tab label="Content Dashboard" {...a11yProps(2)} />
-          <Tab label="Remote Desktop" {...a11yProps(2)} />
+          <Tab label="Remote Desktop" {...a11yProps(3)} />
         </Tabs>
       </Box>
       <TabPanel style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} value={value} index={0}>
@@ -226,16 +226,16 @@ export default function BasicTabs(props) {
             <Table columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
           </Styles>
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={value} index={1} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
      
                 <Chart datas={chartdata} labels={chartlabel}></Chart>
               
 
       </TabPanel>
-      <TabPanel value={value} index={2}>
+      <TabPanel value={value} index={2} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
         Item Three
       </TabPanel>
-      <TabPanel value={value} index={3}>
+      <TabPanel value={value} index={3} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
         Item Three
       </TabPanel>
     </Box>

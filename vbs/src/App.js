@@ -255,6 +255,7 @@ class App extends Component {
       latencyTestInstanceIds2:[],
       latencyTestInstanceIds:[],
       
+      appidlist:[],
 
       chartdata:[],
       chartlabel:[],
@@ -262,7 +263,7 @@ class App extends Component {
       buttonclick_createEC2:false,
       buttonclick_findbestregion:false,
       buttonclick_statusmanage:false,
-
+      selectedAMI:"withsteam",
       processbarStatus:'0',
       instanceType: [
         {id: 'g4dn.2xlarge', name: 'g4dn.2xlarge'},
@@ -286,14 +287,17 @@ class App extends Component {
       ],
       
     };
+    this.createEC2_v2=this.createEC2_v2.bind(this);
     this.onKeyUp=this.onKeyUp.bind(this);
     this.deleteLatencyTestInstance=this.deleteLatencyTestInstance.bind(this);
     this.handleClickPing=this.handleClickPing.bind(this);
     this.selectCountry = this.selectCountry.bind(this);
+    this.selectAMI=this.selectAMI.bind(this)
     this.selectAnalysisMethod = this.selectAnalysisMethod.bind(this);
     this.selectRescueAction=this.selectRescueAction.bind(this);
     this.latencyResult=this.latencyResult.bind(this);
     this.myPingFunc4=this.myPingFunc4.bind(this);
+    this.checkPing=this.checkPing.bind(this);
     this.checkCostUsage=this.checkCostUsage.bind(this);
     this.checkInstanceStatus=this.checkInstanceStatus.bind(this);
     this.reactTableInstance=this.reactTableInstance.bind(this);
@@ -318,6 +322,30 @@ class App extends Component {
     this.checkInstanceTablebyUser=this.checkInstanceTablebyUser.bind(this);
     this.checkLatencyTablebyCity=this.checkLatencyTablebyCity.bind(this);
     this.handleChangeSwithSpotInstanceConfig=this.handleChangeSwithSpotInstanceConfig.bind(this);
+  }
+
+  handleChangeAPPSelectList=(item,action)=>{
+    console.log(item,action)
+    var templist=this.state.appidlist
+    if (action=='add'){
+      templist.push(item['appid'])
+    }
+    else{
+      
+    for( var i = 0; i < templist.length; i++){ 
+    
+      if ( templist[i] === item['appid']) { 
+  
+        templist.splice(i, 1); 
+      }
+  
+  }
+      // templist.remove(item['appid'])
+
+    }
+    this.setState({appidlist:templist})
+    console.log("checkbox:",this.state.appidlist,templist)
+    
   }
 
   handleChangeSwithSpotInstanceConfig=()=>{
@@ -391,6 +419,8 @@ class App extends Component {
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
         "regions":regions,
+        'Authorization':'allow',
+        'authorizationToken':'allow',
         "action":'create_flow_logs'
     })
     };
@@ -439,7 +469,7 @@ addLatencyDB=async (data) =>{
       })
 
 }
-myPingFunc4 =async (fqdn) =>{
+myPingFunc4 =async (fqdn,availableFlag) =>{
 
   var NB_ITERATIONS = 1; // number of loop iterations
   var MAX_ITERATIONS = 2; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
@@ -449,12 +479,12 @@ myPingFunc4 =async (fqdn) =>{
   var time_cumul = 0;
   var REQUEST_TIMEOUT = 15000;
   var TIMEOUT_ERROR = 0;
-  var availableFlag=false;
+  // var availableFlag=false;
   var AVELatency=null
   // document.getElementById('result').innerHTML = "HTTP ping for " + fqdn + "</br>";
   console.log(" myPingFunc2 Click")
   // var ping_loop = setInterval(function(pingTimeGlobal) {
-  while(i<3){
+  while(i<6){
           await timer(1000)
           // let's change non-existent URL each time to avoid possible side effect with web proxy-cache software on the line
           // var url = "http://" + fqdn + "/a30Fkezt_77" + Math.random().toString(36).substring(7);
@@ -463,7 +493,7 @@ myPingFunc4 =async (fqdn) =>{
           if (i < MAX_ITERATIONS) {
               var ping = new XMLHttpRequest();
                   
-              i++;
+              
               ping.seq = i;
               over_flag++;
               ping.timeout = REQUEST_TIMEOUT; // it could happen that the request takes a very long time
@@ -476,7 +506,14 @@ myPingFunc4 =async (fqdn) =>{
                           time_cumul += delta_time;
                           console.log("http_seq=" + (ping.seq-1) + " time=" + delta_time + " ms")
                           // document.getElementById('result').innerHTML += "</br>http_seq=" + (ping.seq-1) + " time=" + delta_time + " ms</br>";
-                      }
+                          console.log("----------------",delta_time,(delta_time<1000),availableFlag,"-----------");
+                          if (delta_time<1000){
+                            availableFlag=true
+                            console.log("----------------",availableFlag,"-----------");
+
+                          }
+                      
+                        }
                       over_flag--;
                   }
               }
@@ -499,12 +536,13 @@ myPingFunc4 =async (fqdn) =>{
                 }
               };
               ping.send();
+              
             
   
           }
   
-          if ((i > NB_ITERATIONS) && (over_flag < 1)) { // all requests are passed and have returned
-  
+          // if ((i > NB_ITERATIONS) && (over_flag < 1)) { // all requests are passed and have returned
+          if (i > NB_ITERATIONS) {
               // clearInterval(ping_loop);
               var avg_time = Math.round(time_cumul / (i - 1));
              
@@ -524,6 +562,7 @@ myPingFunc4 =async (fqdn) =>{
           // }
   
       // }, TIME_PERIOD);
+      i++;
         }
 
       console.log("AVELatency",avg_time,AVELatency,pingTimeGlobal)
@@ -531,6 +570,101 @@ myPingFunc4 =async (fqdn) =>{
       // this.setState({pingTimeState:avg_time})
       // return avg_time,availableFlag
       return availableFlag
+}
+
+
+checkPing=async (fqdn,availableFlag) =>{
+
+        var NB_ITERATIONS = 1; // number of loop iterations
+        var MAX_ITERATIONS = 2; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
+        var TIME_PERIOD = 1000; // 1000 ms between each ping
+        var i = 0;
+        var over_flag = 0;
+        var time_cumul = 0;
+        var REQUEST_TIMEOUT = 15000;
+        var TIMEOUT_ERROR = 0;
+        var delta_time=0
+        var times=[]
+        // var availableFlag=false;
+        var AVELatency=null
+        // document.getElementById('result').innerHTML = "HTTP ping for " + fqdn + "</br>";
+        console.log(" myPingFunc2 Click")
+        // var ping_loop = setInterval(function(pingTimeGlobal) {
+          var whileFlag=true
+          while(whileFlag){
+              await timer(700)
+                  // let's change non-existent URL each time to avoid possible side effect with web proxy-cache software on the line
+                  var url =fqdn 
+                  console.log("--------- Ping----",url);        
+                  // var url = "http://" + fqdn
+                  if (i < MAX_ITERATIONS) {
+                      var ping = new XMLHttpRequest();
+                      // ping.setRequestHeader('Access-Control-Allow-Origin', 'https://d1wzk0972nk23y.cloudfront.net/')
+                      
+                      ping.seq = i;
+                      over_flag++;
+                      ping.timeout = REQUEST_TIMEOUT; // it could happen that the request takes a very long time
+                      ping.date1 = Date.now();
+                      ping.onreadystatechange = function() { // the request has returned something, let's log it (starting after the first one)
+          
+                          if (ping.readyState == 4 && TIMEOUT_ERROR == 0) {
+                              if (ping.seq > 1) {
+                                  delta_time = Date.now() - ping.date1;
+                                  if (delta_time<900){
+                                    times.push(delta_time)
+                                    availableFlag=true
+                                  }
+                                  else{
+                                    i=i-1
+                                  }
+    
+                                  
+                                  // time_cumul += delta_time;
+                                  console.log("http_seq=" + (ping.seq-1) + " time=" + delta_time + " ms",times)
+                                  // document.getElementById('result').innerHTML += "</br>http_seq=" + (ping.seq-1) + " time=" + delta_time + " ms</br>";
+                              }
+                              over_flag--;
+                          }
+                      }
+                      ping.ontimeout = function() {
+                          TIMEOUT_ERROR = 1;
+                      }
+          
+                      ping.open("GET", url, true);
+                      ping.send();
+          
+                  }
+          
+                  if ((i >= MAX_ITERATIONS) && (over_flag <1)) { // all requests are passed and have returned
+          
+                   
+                      whileFlag=false
+                  }
+          
+                  if (TIMEOUT_ERROR == 1) { // timeout: data cannot be accurate
+                    console.log("SomeError")
+                    i=i-1
+                  //     // clearInterval(ping_loop);
+                  //     // document.getElementById('result').innerHTML += "<br/> THERE WAS A TIMEOUT ERROR <br/>";
+                  //     return;
+                    
+                  }
+                  if (over_flag >=1){
+                    if (i >= MAX_ITERATIONS){
+                    whileFlag=false
+                    }
+                  }
+                  console.log(TIMEOUT_ERROR,over_flag)
+              // }, TIME_PERIOD);
+                i++;
+                }
+
+      // console.log("AVELatency",avg_time,AVELatency,pingTimeGlobal)
+      console.log("Check latencytest instance available",availableFlag)
+      // this.setState({pingTimeState:avg_time})
+      // return avg_time,availableFlag
+      return availableFlag
+
 }
 
 httppingtest=async (data) =>{
@@ -688,8 +822,8 @@ httpspingtest=async (data) =>{
     
       
       var fqdn=serverIP
-      var NB_ITERATIONS = 6; // number of loop iterations
-      var MAX_ITERATIONS = 7; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
+      var NB_ITERATIONS = 2; // number of loop iterations
+      var MAX_ITERATIONS = 3; // beware: the number of simultaneous XMLHttpRequest is limited by the browser!
       var TIME_PERIOD = 1000; // 1000 ms between each ping
       var i = 0;
       var over_flag = 0;
@@ -716,7 +850,7 @@ httpspingtest=async (data) =>{
                   ping.timeout = REQUEST_TIMEOUT; // it could happen that the request takes a very long time
                   ping.date1 = Date.now();
                   ping.onreadystatechange = function() { // the request has returned something, let's log it (starting after the first one)
-      
+                  
                       if (ping.readyState == 4 && TIMEOUT_ERROR == 0) {
                           if (ping.seq > 1) {
                               delta_time = Date.now() - ping.date1;
@@ -799,6 +933,13 @@ selectRescueAction = (e) => {
   this.setState({selectedRescueAction:e.target.options[idx].value})
  
 }
+selectAMI=(e)=>{
+  let idx = e.target.selectedIndex;
+  let dataset = e.target.options[idx].dataset;
+
+  console.log('Choose AMI : ',idx,e.target.options[idx].value);
+  this.setState({selectedAMI:e.target.options[idx].value})
+}
 selectCountry = (e) => {
   let idx = e.target.selectedIndex;
   let dataset = e.target.options[idx].dataset;
@@ -831,7 +972,7 @@ wait(ms){
  }
   
 
- createEC2_v2(e){
+ createEC2_v2=async (e)=>{
   console.log(e)
   this.setState({buttonclick_createEC2:true})
   var selectedZone=e.selectedZone
@@ -839,8 +980,10 @@ wait(ms){
   
   console.log(selectedZone,selectedInstanceType)
   var userid=e.userinfo.id
-  var userAMI=e.userinfo.other.userAMI
-  var appids=e.selectedAppIds
+  // var userAMI=e.userinfo.other.userAMI
+  var userAMI=e.selectedAMI
+  var appids=e.appidlist
+  var spot=e.checkedSpotInstanceConfig
   
   var url=APIs['CreateEC2']+'?ec2zone='+selectedZone+'&ec2type='+selectedInstanceType+'&userid='+userid
   const requestOptions = {
@@ -848,26 +991,46 @@ wait(ms){
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
       "userAMI": userAMI,
-      "appids":appids
+      "appids":appids,
+      "spot":spot
   })
   };
 
 
   console.log("url",url)
-  fetch(url,requestOptions)
-    .then(res => res.json())
-    .then(data => {
-          /*接到request data後要做的事情*/
-          console.log(data)
+  const response_from_init = await fetch(url,requestOptions)
+  const data = await response_from_init.json();
+  var instancedata=data['data'][0]
+  this.setState({
+    createdInstanceInfo:{'data':data['data'][0]}
+  })
+  // fetch(url,requestOptions)
+  //   .then(res => res.json())
+  //   .then(data => {
+  //         /*接到request data後要做的事情*/
+  //         console.log(data)
   
-          this.setState({
-            createdInstanceInfo:{'data':data['data'][0]}
-          })
-    })
-    .catch(e => {
-        /*發生錯誤時要做的事情*/
-        console.log(e);
-    })
+  //         this.setState({
+  //           createdInstanceInfo:{'data':data['data'][0]}
+  //         })
+  //   })
+  //   .catch(e => {
+  //       /*發生錯誤時要做的事情*/
+  //       console.log(e);
+  //   })
+   
+  
+    var Flag=true
+    while(Flag){
+      var check_reponse=await this.deleteEC2(instancedata.instance_id,instancedata.instance_region,"chcek")
+      console.log("check_reponse")
+      console.log(check_reponse)
+      Flag=false
+    }
+    this.checkInstanceTablebyUser(userid)
+    this.checkInstanceStatus(this.state,userid)
+    
+    // this.setState({buttonclick_createEC2:false})
   }
 
 createEC2(e){
@@ -897,7 +1060,7 @@ fetch(url,{method:"GET"})
   })
 }
 
-deleteEC2(id,region,action){
+deleteEC2=async(id,region,action)=>{
  
 //   const requestOptions = {
 //     method: 'POST',
@@ -993,6 +1156,7 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
         console.log(e);
     })
   }
+  
   
   checkInstanceStatus(e,userid){
     var datalist=e.tableDataState
@@ -1306,6 +1470,8 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
         /*發生錯誤時要做的事情*/
         console.log(e);
     })
+
+    this.checkInstanceStatus(this.state,userid)
     // console.log("==========checkInstanceStatus Input=======")
     // console.log(datalist)
     // var response=this.checkInstanceStatus(datalist)
@@ -1435,7 +1601,7 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
           instanceCity:data['data'][0]['latencyTest'][i].instanceCity,
           instanceCountry:data['data'][0]['latencyTest'][i].instanceCountry,
         
-     
+            
           instanceIp:data['data'][0]['latencyTest'][i].instanceIp,
 
           region:data['data'][0]['latencyTest'][i].region,
@@ -1549,7 +1715,7 @@ deleteSelectedEC2(e,action){
 
   }
   
-  
+  // this.setState({buttonclick_statusmanage:false})
 }
 
 
@@ -1597,25 +1763,25 @@ createLatencyTestInstance=async (e) =>{
   console.log("create Latency Instance")
   console.log(e)
   // var url=APIs['LatencyTest']+'?userid='+e.userinfo.id
-  var url1=APIs['LatencyTest']+'/user/developer-123456789/action/init'
-  var url2=APIs['LatencyTest']+'/user/developer-123456789/action/check'
-  var url3=APIs['LatencyTest']+'/user/developer-123456789/action/delete'
-  // var url1=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=init'
-  // var url2=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=check'
-  // var url3=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=delete'
+  // var url1=APIs['LatencyTest']+'/user/developer-123456789/action/init'
+  // var url2=APIs['LatencyTest']+'/user/developer-123456789/action/check'
+  // var url3=APIs['LatencyTest']+'/user/developer-123456789/action/delete'
+  var url1=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=init&source_ip='+e.userinfo.ip
+  var url2=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=check&source_ip='+e.userinfo.ip
+  var url3=APIs['Test']+'?userid='+e.userinfo.id+'&actionid=delete&source_ip='+e.userinfo.ip
 
 
   const requestOptions1 = {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json' ,
-      'Authorization':'allow',
-      'authorizationToken':'allow'
+    method: 'GET',
+  //   headers: { 
+  //     'Content-Type': 'application/json' ,
+  //     'Authorization':'allow',
+  //     'authorizationToken':'allow'
 
-    },
-    body: JSON.stringify({ 
-      'source_ip':e.userinfo.ip
-  })
+  //   },
+  //   body: JSON.stringify({ 
+  //     'source_ip':e.userinfo.ip
+  // })
     }
 
   let RegionInfo=[]
@@ -1729,14 +1895,19 @@ createLatencyTestInstance=async (e) =>{
   var begintime= Date.now();
   while(Flag){
     Flag=false
+    
     // var instanceIPsList=[]
     for (let i = 0; i < data[0]['data'][0]['instanceData'].length; i++) {  
-      var url='https://'+data[0]['data'][0]['instanceData'].instanceIP+'nip.io'
-      var flag=await this.myPingFunc4(url)
+      var url='https://'+data[0]['data'][0]['instanceData'][i].instanceIP+'.nip.io'
+      var flag=false
+      // flag=await this.myPingFunc4(url,flag)
+      flag=await this.checkPing(url,flag)
+      console.log(flag,Flag)
+  
       if(flag==false){Flag=true}
       }
     var test_time = Date.now() - begintime;
-    if(test_time>30000){break;}
+    if(test_time>300000){Flag=false;}
       
   }
   // var Flag=true
@@ -1994,8 +2165,8 @@ findBestRegion_v2=async (e) =>{
     ip:null
     
   }
-  // const latencydatalist=await this.checkLatencyTablebyCity(e)
-  const latencydatalist=[]
+  const latencydatalist=await this.checkLatencyTablebyCity(e)
+  // const latencydatalist=[]
   console.log('latencydatalist')
   console.log(latencydatalist)
   var itemString 
@@ -2019,7 +2190,7 @@ findBestRegion_v2=async (e) =>{
                       id: latencydatalist[i].zone, 
                       city: latencydatalist[i].city,
                       country:latencydatalist[i].country,
-                      result:latencydatalist[i].distance,});   
+                      result:latencydatalist[i].latency,});   
               }
               this.setState({
                 // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
@@ -2031,11 +2202,41 @@ findBestRegion_v2=async (e) =>{
   }else{
   
   
-      var selectedAnalysisMethod=e.selectedAnalysisMethod
+      // var selectedAnalysisMethod=e.selectedAnalysisMethod
 
-      this.createLatencyTestInstance(this.state)
-      this.setState({buttonclick_findbestregion:false})
+      // this.createLatencyTestInstance(this.state)
+      // this.setState({buttonclick_findbestregion:false})
+
+      var defulatRegionInfo=[
+        {'zone':'us-east-1','instanceIP':'ec2.us-east-1.amazonaws.com/ping','instanceid': 'ec2.us-east-1.amazonaws.com/ping','instanceCity':'N. Virginia','instanceCountry':'US'},
+        // {'zone':'us-east-2','instanceIP':'ec2.us-east-2.amazonaws.com/ping','instanceid': 'ec2.us-east-2.amazonaws.com/ping','instanceCity':'Ohio','instanceCountry':'US'},
+        {'zone':'us-west-1','instanceIP':'ec2.us-west-1.amazonaws.com/ping','instanceid': 'ec2.us-west-1.amazonaws.com/ping','instanceCity':'N. California','instanceCountry':'US'},
+        // {'zone':'us-west-2','instanceIP':'ec2.us-west-2.amazonaws.com/ping','instanceid': 'ec2.us-west-2.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ca-central-1','instanceIP':'ec2.ca-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'eu-north-1','instanceIP':'ec2.eu-north-1.amazonaws.com/ping','instanceid': 'ec2.eu-north-1.amazonaws.com/ping','instanceCity':'Stockholm','instanceCountry':'Sweden'},
+        // {'zone':'eu-west-3','instanceIP':'ec2.eu-west-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'eu-west-2','instanceIP':'ec2.eu-west-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'eu-west-1','instanceIP':'ec2.eu-west-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'eu-central-1','instanceIP':'ec2.eu-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'eu-south-1','instanceIP':'ec2.eu-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-south-1','instanceIP':'ec2.ap-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'ap-northeast-1','instanceIP':'ec2.ap-northeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-northeast-2','instanceIP':'ec2.ap-northeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-northeast-3','instanceIP':'ec2.ap-northeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-southeast-1','instanceIP':'ec2.ap-southeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-southeast-2','instanceIP':'ec2.ap-southeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'ap-southeast-3','instanceIP':'ec2.ap-southeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'ap-east-1','instanceIP':'ec2.ap-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'sa-east-1','instanceIP':'ec2.sa-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'cn-north-1','instanceIP':'ec2.cn-north-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'cn-northwest-1','instanceIP':'ec2.cn-northwest-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        // {'zone':'me-south-1','instanceIP':'ec2.me-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'}
+      ]
+
+      this.httpspingtest(defulatRegionInfo)
     }
+  this.setState({buttonclick_findbestregion:false})
 }
 
 findBestRegion=async (e) =>{
@@ -2442,6 +2643,7 @@ LaunchApp() {
   
     console.log('table data',data)
     const columns = tableColumnConfig[this.state.tableColumnState]
+    const AMIs=[{"id":"withsteam","name":"With Steam"},{"id":"withoutsteam","name":"Without Steam"}]
     const { userHelpString,analysisMethods,rescueActions,countries,selectedZone,userinfo ,selectedinstanceIdString,instanceType,latencyTable,displayTable,selectedInstanceType, resultDisplayString,selectedInstanceId} = this.state;
     const {buttonclick_createEC2,buttonclick_findbestregion,buttonclick_statusmanage}=this.state
     const {chartdata,chartlabel}=this.state
@@ -2454,6 +2656,11 @@ LaunchApp() {
       )
     }, this);
 
+    let amiList =AMIs.map((item, i) => {
+      return (
+        <option key={i} value={item.id}>{item.name}  </option>
+      )
+    }, this);
     let instanceTypeList = instanceType.map((item, i) => {
       return (
         <option key={i} value={item.id}>{item.name}</option>
@@ -2519,12 +2726,12 @@ LaunchApp() {
               <ComplexStatisticsCard
                 other={""}
                 other2={""}
-                title="Running Instance / Registrated Instance"
+                title="Instance Usage / Instance Quota"
                 count={userinfo.other.instanceQuota.toString()}
                 percentage={{
                   color: "success",
-                  amount: "+3%",
-                  label: "than last month",
+                  amount: "",
+                  label: "",
                 }}
               />
                 {/* <ReportsLineChart
@@ -2571,8 +2778,8 @@ LaunchApp() {
                 count="34k"
                 percentage={{
                   color: "success",
-                  amount: "+1%",
-                  label: "than yesterday",
+                  amount: "",
+                  label: "",
                 }}
               />
             </MDBox>
@@ -2584,12 +2791,12 @@ LaunchApp() {
                 color="primary"
                 other={""}
                 other2={""}
-                title="Weekly Cost "
+                title="Cost for Most Recent Week"
                 count={userinfo.other.WeeklyCostSum.toString()}
                 percentage={{
                   color: "success",
                   amount: "",
-                  label: "Just updated",
+                  label: "",
                 }}
               />
            
@@ -2646,23 +2853,27 @@ LaunchApp() {
                 Create instance  {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>}
                           
                           <MDBox mb={3}>
-                  
+                            <Grid>
+                          <select onChange={this.selectAMI}>
+                            {amiList}
+                          </select>
                           <select onChange={this.selectCountry}>
                             {countriesList}
                           </select>
                           <select onChange={this.selectInstanceType}>
                             {instanceTypeList}
                           </select>
-                          <Checkboxes/>
+                          <Checkboxes handleChangeAPPSelectList={this.handleChangeAPPSelectList}/>
 
                           On-Demand
                           <Switch
                             checked={checkedSpotInstanceConfig}
                             onChange={this.handleChangeSwithSpotInstanceConfig}
-                            inputProps={{ 'aria-label': 'controlled' }}
+                            inputProps={{ 'aria-label': 'controlled'}}
                           />
                           Spot
-                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2(this.state)}>Create AWS EC2 Instance</MDButton>
+                          </Grid>
+                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2_v2(this.state)}>Create AWS EC2 Instance</MDButton>
                  
 
                           
@@ -2772,7 +2983,7 @@ LaunchApp() {
                   </MDBox>
 
                 <MDBox pt={1} pb={1} px={1}>
-                <MDButton  variant="gradient" color="info" onClick={() => this.checkFlowLogs(this.state)}>Flow Log Analysis</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.createFlowLogs(this.state)}>Flow Log Analysis</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.downloadFlowLogs(this.state)}> Flow Log Download</MDButton>
 
                 

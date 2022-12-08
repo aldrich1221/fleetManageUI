@@ -136,7 +136,7 @@ function DashboardNavbar({ absolute, light, isMini,userinfo,generateUUID,usertyp
           VBS Cloud
         </MDBox>
         {userinfo.id==null?<div>
-        <MDButton  variant="gradient" color="success" style={{textTransform: 'none'}} onClick={() => generateUUID('user')}> I am an enterprise user.</MDButton>
+        <MDButton  variant="gradient" color="success" style={{textTransform: 'none'}} onClick={() => generateUUID('user')}> I am an individual user.</MDButton>
         <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => generateUUID('developer')}>I am a developer / an administrator.</MDButton>
         </div>
         
