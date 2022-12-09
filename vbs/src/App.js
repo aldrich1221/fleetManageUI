@@ -1,4 +1,5 @@
 "use strict";
+
 import logo from './logo.svg';
 import './App.css';
 import React, {Component,useState, useEffect,useMemo } from 'react';
@@ -76,12 +77,12 @@ const APIs={
   
   'SendCommand':'https://sf43cgtn5g.execute-api.us-east-1.amazonaws.com/prod/v1',
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'EC2Rescue':"https://0i5ak94qsl.execute-api.us-east-1.amazonaws.com/prod/v1",
-  'Network':"https://gwu12tu23f.execute-api.us-east-1.amazonaws.com/prod/v1"
+  'EC2Rescue':"https://r9e89v6dml.execute-api.us-east-1.amazonaws.com/prod/v1",
+  'Network':"https://uhsyifylcd.execute-api.us-east-1.amazonaws.com/prod/v1"
     
 }
 
-
+const pako = require('pako');
 
 
 var pingTimeGlobal=9999
@@ -165,6 +166,19 @@ const section3 = {
   　color:'black',
   　'fontWeight':'bold',
   border:'solid'
+};
+
+const section_result = {
+  minHeight:350,
+  height: "100%",
+  paddingTop: 5,
+  // backgroundColor:'black',
+  // 　color:'yellow',
+  // 　'fontWeight':'bold',
+  maxHeight:350,
+  overflow:'scroll'
+  
+  
 };
 const section4 = {
   minHeight:350,
@@ -305,6 +319,7 @@ class App extends Component {
     this.checkPing=this.checkPing.bind(this);
     this.checkCostUsage=this.checkCostUsage.bind(this);
     this.checkInstanceStatus=this.checkInstanceStatus.bind(this);
+    this.checkInstanceDetailTableStatus=this.checkInstanceDetailTableStatus.bind(this)
     this.reactTableInstance=this.reactTableInstance.bind(this);
     this.deleteSelectedEC2=this.deleteSelectedEC2.bind(this);
     this.findBestRegion=this.findBestRegion.bind(this);
@@ -1007,9 +1022,10 @@ wait(ms){
   console.log("url",url)
   const response_from_init = await fetch(url,requestOptions)
   const data = await response_from_init.json();
-  var instancedata=data['data'][0]
+  console.log(data)
+  var instancedata=data[0]['data'][0]
   this.setState({
-    createdInstanceInfo:{'data':data['data'][0]}
+    createdInstanceInfo:{'data':data[0]['data'][0]}
   })
   // fetch(url,requestOptions)
   //   .then(res => res.json())
@@ -1026,16 +1042,25 @@ wait(ms){
   //       console.log(e);
   //   })
    
-  
+    console.log("check status")
+
     var Flag=true
     while(Flag){
-      var check_reponse=await this.deleteEC2(instancedata.instance_id,instancedata.instance_region,"chcek")
+      await timer(10000)
+      var check_reponse=await this.deleteEC2(instancedata.instance_id,instancedata.instance_region,"check")
       console.log("check_reponse")
+      console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
+      if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]=="ok"){
+        Flag=false
+      }
       console.log(check_reponse)
-      Flag=false
+    
     }
     this.checkInstanceTablebyUser(userid)
-    this.checkInstanceStatus(this.state,userid)
+    this.setState({
+      buttonclick_createEC2:false
+    })
+    // this.checkInstanceStatus(this.state,userid)
     
     // this.setState({buttonclick_createEC2:false})
   }
@@ -1098,21 +1123,24 @@ deleteEC2=async(id,region,action)=>{
 //       console.log(e);
 //     })
 var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
-  
 
-  console.log("url",url)
-  fetch(url,{method:"GET"})
-    .then(res => res.json())
-    .then(data => {
-          /*接到request data後要做的事情*/
-          console.log(action ,"ec2 reponse: ",data)
-          this.setState({createdInstanceInfo:{'data':'No instance'}})
+const response_from_init = await fetch(url,{method:"GET"})
+const data = await response_from_init.json();
+
+  // console.log("url",url)
+  // fetch(url,{method:"GET"})
+  //   .then(res => res.json())
+  //   .then(data => {
+  //         /*接到request data後要做的事情*/
+  //         console.log(action ,"ec2 reponse: ",data)
+  //         this.setState({createdInstanceInfo:{'data':'No instance'}})
           
-    })
-    .catch(e => {
-        /*發生錯誤時要做的事情*/
-        console.log(e);
-    })
+  //   })
+  //   .catch(e => {
+  //       /*發生錯誤時要做的事情*/
+  //       console.log(e);
+  //   })
+  return data
   }
   checkInstanceTable(e){
     
@@ -1164,6 +1192,110 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
     })
   }
   
+  checkInstanceDetailTableStatus(e,userid){
+    var datalist=e.tableDataState
+    // var userid=e.userinfo.id
+    console.log("=========call  checkInstanceStatus=========== ")
+    var ec2ids=[]
+    var regions=[]
+    for (let i = 0; i < datalist.length; i++) {  
+      ec2ids.push(datalist[i].instanceId)
+      regions.push(datalist[i].region)
+    }
+    
+    
+    var url=APIs['Metrics']
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        "ec2ids": ec2ids,
+        "regions":regions
+    })
+    };
+    console.log("=========call  requestOptions=========== ")
+    console.log(requestOptions)
+    
+    var newDataList=[]
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          // this.setState({ postId: data.id })
+          console.log("metric response")
+          console.log(data)
+          var statusDictList=[]
+          for (let j = 0; j < data.length; j++) {
+            var statusDict={}
+            for (let i = 0; i < data[j]["data"].length; i++) {
+              console.log("=========per ec2 per metric===========")
+              console.log(data[j]["data"][i])
+              if (data[j]["data"][i]["datapoints"].length>0){
+                
+                if (data[j]["data"][i]["label"]=="InstanceStatuses"){
+                  if (data[j]["data"][i]["datapoints"][0]["InstanceStatuses"].length>0){
+                    statusDict["InstanceState"]=data[j]["data"][i]["datapoints"][0]["InstanceStatuses"][0]["InstanceState"]['Name']
+                    statusDict["InstanceStatus"]=data[j]["data"][i]["datapoints"][0]["InstanceStatuses"][0]["InstanceStatus"]["Status"]
+                    statusDict["SystemStatus"]=data[j]["data"][i]["datapoints"][0]["InstanceStatuses"][0]["SystemStatus"]["Status"]
+                  }
+                }
+                else{
+                  statusDict[data[j]["data"][i]["label"]]=data[j]["data"][i]["datapoints"][0]["Average"]
+                }
+              
+              }
+              else{
+                statusDict[data[j]["data"][i]["label"]]="No data"
+              }
+            }
+            console.log(" statusDict")
+            console.log( statusDict)
+            statusDictList.push(statusDict)
+          }
+          for (let i = 0; i < datalist.length; i++) {
+            for (let j = 0; j < data.length; j++) {
+              if (datalist[i].instanceId==data[j]["ec2id"]){
+                newDataList.push({
+                  userId: userid,
+                  instancetype:datalist[i].instancetype,
+                  instanceId: datalist[i].instanceId,
+                  instanceIp:datalist[i].instanceIp,
+                  publicDnsName:datalist[i].publicDnsName,
+                  cpuUtilization: statusDictList[j]["CPUUtilization"],
+                  status:statusDictList[j]["InstanceState"],
+                  launchtime:datalist[i].launchtime,
+                  region:datalist[i].region,
+                  zone:datalist[i].zone,
+                  instanceStatus:statusDictList[j]["InstanceStatus"],
+                  systemStatus:statusDictList[j]["SystemStatus"],
+                  networkIn:statusDictList[j]["NetworkIn"],
+                  networkOut:statusDictList[j]["NetworkOut"],
+                  networkPacketsIn:statusDictList[j]["NetworkPacketsIn"],
+                  networkPacketsOut:statusDictList[j]["NetworkPacketsOut"],
+                  EBSIOBalance:statusDictList[j]["EBSIOBalance%"]
+                  })
+
+              }
+            
+            }
+          }
+          console.log(newDataList)
+          console.log("==========checkInstanceStatus set data")
+          this.setState({
+            // instanceTable:data['data'],
+           
+            //   displayTable:data['data'][0]['data'],
+              tableDataState:newDataList,
+              tableColumnState:'instanceDetailTable'
+              
+          });
+        
+          }
+          )
+
+    
+    
+  }
+
   
   checkInstanceStatus(e,userid){
     var datalist=e.tableDataState
@@ -1289,10 +1421,7 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
     var url=APIs['EC2Rescue']+'/user/'+userid+'/ec2/'+ec2ids[0]
     const requestOptions = {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization':'allow',
-        'authorizationToken':'allow' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
         "regions":regions,
@@ -1501,12 +1630,12 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
             instanceIp:data['data'][0]['data'][i].publicIP,
             cpuUtilization:"No Data",
             publicDnsName:data['data'][0]['data'][i].publicDnsName,
-            status:data['data'][0]['data'][i].status
+            status:data['data'][0]['data'][i].state
             ,launchtime:data['data'][0]['data'][i].launchtime
             ,region:data['data'][0]['data'][i].region
             ,zone:data['data'][0]['data'][i].zone,
-            instanceStatus:"No Data",
-                  systemStatus:"No Data",
+            instanceStatus:data['data'][0]['data'][i].instanceStatus,
+                  systemStatus:data['data'][0]['data'][i].systemStatus,
                   networkIn:"No Data",
                   networkOut:"No Data",
                   networkPacketsIn:"No Data",
@@ -1534,8 +1663,8 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
         /*發生錯誤時要做的事情*/
         console.log(e);
     })
-
-    this.checkInstanceStatus(this.state,userid)
+    console.log("==========after get instance table update status=========")
+    // this.checkInstanceStatus(this.state,userid)
     // console.log("==========checkInstanceStatus Input=======")
     // console.log(datalist)
     // var response=this.checkInstanceStatus(datalist)
@@ -1771,15 +1900,35 @@ latencyResult(e){
  
   this.checkLatencyTablebyUser(e.userinfo.id)
 }
-deleteSelectedEC2(e,action){
+deleteSelectedEC2=async(e,action)=>{
   this.setState({buttonclick_statusmanage:true})
   console.log("Delete",e.tableSelctedItem)
   for (let i = 0; i < e.tableSelctedItem.length; i++) {   
-    this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
+    await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
 
   }
+  if (action=="start"){
+    
+  var Flag=true
+    while(Flag){
+      Flag=false
+      await timer(10000)
+      for (let i = 0; i < e.tableSelctedItem.length; i++) {  
+      var check_reponse=await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,"check")
+      console.log("check_reponse")
+      console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
+      
+        if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]!="ok"){
+          Flag=true
+        }
+      }
+     
+      console.log(check_reponse)
+    }
+    }
   
-  // this.setState({buttonclick_statusmanage:false})
+  this.checkInstanceTablebyUser(e.userinfo.id)
+  this.setState({buttonclick_statusmanage:false})
 }
 
 
@@ -2256,6 +2405,9 @@ findBestRegion_v2=async (e) =>{
                       country:latencydatalist[i].country,
                       result:latencydatalist[i].latency,});   
               }
+
+              items.sort((a, b) => (a.result > b.result) ? 1 : -1)
+              console.log("=========completed ping=====",items)
               this.setState({
                 // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
                 countries: items,
@@ -2404,10 +2556,10 @@ findBestRegion=async (e) =>{
   
 
   
-  this.setState({
-    tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'good',userId:userinfo.id,city:userinfo.city}],
-    tableColumnState:'basic'
-  })
+  // this.setState({
+  //   tableDataState:[{firstName:'Developer',lastName:'Developer',Visits:1,status:'good',userId:userinfo.id,city:userinfo.city}],
+  //   tableColumnState:'basic'
+  // })
 }
 handleUrlChange(event) {
   console.log(event.target.value);
@@ -2558,36 +2710,97 @@ LaunchApp() {
   }
 
   downloadFlowLogs=async()=>{
-    
-
-    fetch('https://vbs-tempfile-bucket-htc.s3.amazonaws.com/i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0645Z_3cb900b2.log.gz', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/pdf',
-      },
-    })
-    .then((response) => response.blob())
-    .then((blob) => {
-      // Create blob link to download
-      const url = window.URL.createObjectURL(
-        new Blob([blob]),
-      );
+    AWS.config.update(
+      {
+        accessKeyId: "AKIA4T2RLXBEA3M2SN4H",
+        secretAccessKey: "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",
+      }
+    );
+    var s3 = new AWS.S3();
+    const params = {
+      Bucket:"vbs-tempfile-bucket-htc",
+      Key: "i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/08/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221208T1350Z_56d92dbb.log.gz",
+    };
+    function downloadBlob(blob, name = `$.log.gz`) {
+      // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+      const blobUrl = URL.createObjectURL(blob);
+      // Create a link element
       const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute(
-        'download',
-        `867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0640Z_7f54a047.log.gz`,
-      );
-  
-      // Append to html link element page
+      // Set link's href to point to the Blob URL
+      link.href = blobUrl;
+      link.download = name;
+      // Append link to the body
       document.body.appendChild(link);
-  
-      // Start download
-      link.click();
-  
-      // Clean up and remove the link
-      link.parentNode.removeChild(link);
+      // Dispatch click event on the link
+      // This is necessary as link.click() does not work on the latest firefox
+      link.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        })
+      );
+
+      // Remove link from body
+      document.body.removeChild(link);
+    }
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log(data)
+        const compressed = new Uint8Array();
+        const result=pako.inflate(data.Body, { to: 'string' })
+        this.setState({resultDisplayString:result})
+        
+        // console.log(result)
+        // let newBlob = new Blob([data.Body.toString()], {
+        //   type: 'application/gzip;',
+        // });
+        // downloadBlob(newBlob, `Geood`);
+      }
     });
+
+    // s3.getObject(
+    //   { Bucket: "vbs-tempfile-bucket-htc", Key: "i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/08/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221208T1350Z_56d92dbb.log.gz" },
+    //   function (error, data) {
+    //     if (error != null) {
+    //       alert("Failed to retrieve an object: " + error);
+    //     } else {
+    //       alert("Loaded " + data.ContentLength + " bytes");
+    //       // do something with data.Body
+    //     }
+    //   }
+    // );
+
+    // fetch('https://vbs-tempfile-bucket-htc.s3.amazonaws.com/i-0c959183b2235c2f7/AWSLogs/867217160264/vpcflowlogs/us-east-1/2022/12/02/867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0645Z_3cb900b2.log.gz', {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/pdf',
+    //   },
+    // })
+    // .then((response) => response.blob())
+    // .then((blob) => {
+    //   // Create blob link to download
+    //   const url = window.URL.createObjectURL(
+    //     new Blob([blob]),
+    //   );
+    //   const link = document.createElement('a');
+    //   link.href = url;
+    //   link.setAttribute(
+    //     'download',
+    //     `867217160264_vpcflowlogs_us-east-1_fl-079d26e7de2eef2e8_20221202T0640Z_7f54a047.log.gz`,
+    //   );
+  
+    //   // Append to html link element page
+    //   document.body.appendChild(link);
+  
+    //   // Start download
+    //   link.click();
+  
+    //   // Clean up and remove the link
+    //   link.parentNode.removeChild(link);
+    // });
   }
 
   downloadVBSIpSetting=async()=>{
@@ -2980,7 +3193,7 @@ LaunchApp() {
                 /> */}
                     <Card sx={{ height: "100%" }} sytle={{sizing, maxHeight: 300}}>
                 <MDBox padding="1rem">
-                <BasicTabs  chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
+                <BasicTabs checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
                  {/* <div style={{overflow:'scroll'}}> */}
                       {/* <ButtonGroup >
@@ -3086,7 +3299,7 @@ LaunchApp() {
                                                   <MDButton  variant="gradient" color="info" onClick={() => this.postTest()}>Test3</MDButton>
                   
                                                                 <MDBox pt={1} pb={1} px={1}>
-                                                                                        <div style={{overflow:'scroll'}}>
+                                                                                        <div style={section_result}>
                                                                                                 
                                                                                                   
                                                                                                     {resultDisplayString}

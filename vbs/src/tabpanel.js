@@ -148,7 +148,7 @@ function a11yProps(index) {
 export default function BasicTabs(props) {
     // Chart.register(...registerables);
   console.log(props)
-  const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback, ...other } = props;
+  const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback,checkInstanceDetailTableStatus, ...other } = props;
   const {  chartdata,chartlabel} = props;
 
   const [value, setValue] = React.useState(0);
@@ -214,8 +214,8 @@ export default function BasicTabs(props) {
       <TabPanel style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} value={value} index={0}>
           {/* <ButtonGroup > */}
                             {/* <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button> */}
-                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable</Button>
-                            <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-UpdateStatus</Button>
+                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Basic</Button>
+                            <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Detail</Button>
                             <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
                             <Button label="CostTable" onClick={() =>  checkCostUsage(state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
                             {/* <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button> */}
