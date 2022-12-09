@@ -61,6 +61,7 @@ import AWS from 'aws-sdk';
 import { touchRippleClasses } from '@mui/material';
 // import fsreact from 'fs-react';
 
+
 const axios = require('axios');
 const APIs={
   'CreateEC2':'https://qggbftqkl6.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -75,8 +76,8 @@ const APIs={
   
   'SendCommand':'https://sf43cgtn5g.execute-api.us-east-1.amazonaws.com/prod/v1',
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'EC2Rescue':"https://r9e89v6dml.execute-api.us-east-1.amazonaws.com/prod/v1",
-  'Network':"https://uhsyifylcd.execute-api.us-east-1.amazonaws.com/prod/v1"
+  'EC2Rescue':"https://0i5ak94qsl.execute-api.us-east-1.amazonaws.com/prod/v1",
+  'Network':"https://gwu12tu23f.execute-api.us-east-1.amazonaws.com/prod/v1"
     
 }
 
@@ -287,6 +288,10 @@ class App extends Component {
       ],
       
     };
+    this.getTest=this.getTest.bind(this);
+    this.postTest=this.postTest.bind(this);
+    this.putTest=this.putTest.bind(this);
+    
     this.createEC2_v2=this.createEC2_v2.bind(this);
     this.onKeyUp=this.onKeyUp.bind(this);
     this.deleteLatencyTestInstance=this.deleteLatencyTestInstance.bind(this);
@@ -415,12 +420,14 @@ class App extends Component {
     var url=APIs['Network']+'/user/'+userid+'/ec2/*'
     const requestOptions = {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization':'allow',
+        'authorizationToken':'allow',
+       },
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
         "regions":regions,
-        'Authorization':'allow',
-        'authorizationToken':'allow',
         "action":'create_flow_logs'
     })
     };
@@ -1282,7 +1289,10 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
     var url=APIs['EC2Rescue']+'/user/'+userid+'/ec2/'+ec2ids[0]
     const requestOptions = {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization':'allow',
+        'authorizationToken':'allow' },
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
         "regions":regions,
@@ -1305,6 +1315,60 @@ var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
 
     
     
+  }
+  putTest=(e)=>{
+    var url="https://yi4iccnzw8.execute-api.us-east-1.amazonaws.com/prod/v1"
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization':'allow',
+      },
+      body: JSON.stringify({ 
+        "action": "test"
+    })
+    };   
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+        })
+
+  }
+  postTest=(e)=>{
+    var url="https://yi4iccnzw8.execute-api.us-east-1.amazonaws.com/prod/v1"
+    const requestOptions = {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization':'allow',
+      },
+      body: JSON.stringify({ 
+        "action": "test"
+    })
+    };   
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+        })
+
+  }
+  getTest=(e)=>{
+    var url="https://yi4iccnzw8.execute-api.us-east-1.amazonaws.com/prod/v1"
+    const requestOptions = {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization':'allow',
+      },
+    };   
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+        })
+
   }
   checkInstanceRouteAnalysis(e){
     var datalist=e.tableDataState
@@ -3017,6 +3081,10 @@ LaunchApp() {
                     <Card sx={{ height: "100%" }}>
                               <MDBox padding="1rem">
                                                   <button onClick={()=>this.resultClear()}>Result Clear</button>
+                                                  <MDButton  variant="gradient" color="info" onClick={() => this.getTest()}>Test1</MDButton>
+                                                  <MDButton  variant="gradient" color="info" onClick={() => this.putTest()}>Test2</MDButton>
+                                                  <MDButton  variant="gradient" color="info" onClick={() => this.postTest()}>Test3</MDButton>
+                  
                                                                 <MDBox pt={1} pb={1} px={1}>
                                                                                         <div style={{overflow:'scroll'}}>
                                                                                                 
