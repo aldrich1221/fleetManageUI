@@ -64,8 +64,8 @@ import { touchRippleClasses } from '@mui/material';
 
 const axios = require('axios');
 const APIs={
-  'CreateEC2':'https://qggbftqkl6.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'DeleteEC2':'https://tbym4io348.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'CreateEC2':'https://p4abcgfql8.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'DeleteEC2':'https://mo3e2gxn4a.execute-api.us-east-1.amazonaws.com/prod/v1',
   'QueryDB':' https://w8mk0bw6t9.execute-api.us-east-1.amazonaws.com/prod/v1',
   'AnalysisIP':'https://b0diuhkc9f.execute-api.us-east-1.amazonaws.com/prod/v1',
   'CostUsage':'https://vgwh8al5v1.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -301,6 +301,7 @@ class App extends Component {
       ],
       
     };
+    this.manageEC2=this.manageEC2.bind(this)
     this.createEC2_v2=this.createEC2_v2.bind(this);
     this.onKeyUp=this.onKeyUp.bind(this);
     this.deleteLatencyTestInstance=this.deleteLatencyTestInstance.bind(this);
@@ -999,15 +1000,22 @@ wait(ms){
   var userAMI=e.selectedAMI
   var appids=e.appidlist
   var spot=e.checkedSpotInstanceConfig
-  
-  var url=APIs['CreateEC2']+'?ec2zone='+selectedZone+'&ec2type='+selectedInstanceType+'&userid='+userid
+  // https://6uo8gzcff0.execute-api.us-east-1.amazonaws.com/prod/v1/user/developer-123456789
+  // var url=APIs['CreateEC2']+'?ec2zone='+selectedZone+'&ec2type='+selectedInstanceType+'&userid='+userid
+  var url=APIs['CreateEC2']+'/user/'+userid
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json' ,
+      'authorization':'allow',
+        'authorizationtoken':'allow'
+    },
     body: JSON.stringify({ 
       "userAMI": userAMI,
       "appids":appids,
-      "spot":spot
+      "spot":spot,
+      "ec2type":selectedInstanceType,
+      "ec2zone":selectedZone
   })
   };
 
@@ -1036,19 +1044,37 @@ wait(ms){
   //   })
    
     console.log("check status")
-
     var Flag=true
     while(Flag){
+      Flag=false
       await timer(10000)
-      var check_reponse=await this.deleteEC2(instancedata.instance_id,instancedata.instance_region,"check")
+      
+      var check_reponse=await this.manageEC2([instancedata.instance_id],[instancedata.instance_region],"check")
       console.log("check_reponse")
-      console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
-      if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]=="ok"){
-        Flag=false
-      }
       console.log(check_reponse)
+      console.log(check_reponse[0]["data"][0]["data"]["InstanceStatuses"][0])
+       for (let i = 0; i < check_reponse[0]["data"].length; i++) {   
+          if(check_reponse[0]["data"][i]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]!="ok"){
+            Flag=true
+          }
+       }
     
-    }
+      console.log(check_reponse)
+      }
+    // var Flag=true
+    // while(Flag){
+    //   await timer(10000)
+    //   // var check_reponse=await this.deleteEC2(instancedata.instance_id,instancedata.instance_region,"check")
+    //   var check_reponse=await this.manageEC2([instancedata.instance_id],[instancedata.instance_region],"check")
+      
+    //   console.log("check_reponse")
+    //   console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
+    //   if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]=="ok"){
+    //     Flag=false
+    //   }
+    //   console.log(check_reponse)
+    
+    // }
     this.checkInstanceTablebyUser(userid)
     this.setState({
       buttonclick_createEC2:false
@@ -1085,6 +1111,30 @@ fetch(url,{method:"GET"})
   })
 }
 
+
+manageEC2=async(ids,regions,action)=>{
+ 
+  var url=APIs['DeleteEC2']+'/user/'+this.state.userinfo.id+'/action/'+action
+    const requestOptions = {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'authorization':'allow',
+        'authorizationtoken':'allow'
+       },
+      body: JSON.stringify({ 
+        "title": action,
+        'ec2ids':ids,
+        'ec2regions':regions
+       })
+  };
+  const response_from_init = await fetch(url,requestOptions)
+  const data = await response_from_init.json();
+
+
+    return data
+    }
+
 deleteEC2=async(id,region,action)=>{
  
 //   const requestOptions = {
@@ -1115,8 +1165,22 @@ deleteEC2=async(id,region,action)=>{
 //       /*發生錯誤時要做的事情*/
 //       console.log(e);
 //     })
-var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
-
+// var url=APIs['DeleteEC2']+'?ec2id='+id+'&ec2region='+region+'&action='+action
+// https://astjo9g2mb.execute-api.us-east-1.amazonaws.com/prod/v1/user/developer-123456789/action/delete
+var url=APIs['DeleteEC2']+'/user/'+this.state.userinfo.id+'/action/'+action
+  const requestOptions = {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization':'allow',
+      'authorizationToken':'allow'
+     },
+    body: JSON.stringify({ 
+      title: 'Delete EC2',
+      'ec2ids':[id],
+      'ec2regions':[region]
+     })
+};
 const response_from_init = await fetch(url,{method:"GET"})
 const data = await response_from_init.json();
 
@@ -1555,7 +1619,7 @@ const data = await response_from_init.json();
     
     
   }
-  checkInstanceTablebyUser(userid){
+  checkInstanceTablebyUser=async(userid)=>{
     // var userid=e.userinfo.id
     var datalist=[]
     var url=APIs['QueryDB']+'?tableName=VBS_Instances_Information&userid='+userid
@@ -1566,24 +1630,40 @@ const data = await response_from_init.json();
          
           for (let i = 0; i < data['data'][0]['data'].length; i++) {   
             
+            // datalist.push({
+            // userId: userid,
+            // instancetype:data['data'][0]['data'][i].instancetype,
+            // instanceId: data['data'][0]['data'][i].id,
+            // instanceIp:data['data'][0]['data'][i].publicIP,
+            // // cpuUtilization:"No Data",
+            // publicDnsName:data['data'][0]['data'][i].publicDnsName,
+            // status:data['data'][0]['data'][i].state
+            // ,launchtime:data['data'][0]['data'][i].launchtime
+            // ,region:data['data'][0]['data'][i].region
+            // ,zone:data['data'][0]['data'][i].zone,
+            // instanceStatus:data['data'][0]['data'][i].instanceStatus,
+            //       systemStatus:data['data'][0]['data'][i].systemStatus,
+            //       networkIn:"No Data",
+            //       networkOut:"No Data",
+            //       networkPacketsIn:"No Data",
+            //       networkPacketsOut:"No Data",
+            //       EBSIOBalance:"No Data"
+            
+            // })
             datalist.push({
             userId: userid,
             instancetype:data['data'][0]['data'][i].instancetype,
             instanceId: data['data'][0]['data'][i].id,
             instanceIp:data['data'][0]['data'][i].publicIP,
-            cpuUtilization:"No Data",
+            // cpuUtilization:"No Data",
             publicDnsName:data['data'][0]['data'][i].publicDnsName,
             status:data['data'][0]['data'][i].state
             ,launchtime:data['data'][0]['data'][i].launchtime
             ,region:data['data'][0]['data'][i].region
             ,zone:data['data'][0]['data'][i].zone,
             instanceStatus:data['data'][0]['data'][i].instanceStatus,
-                  systemStatus:data['data'][0]['data'][i].systemStatus,
-                  networkIn:"No Data",
-                  networkOut:"No Data",
-                  networkPacketsIn:"No Data",
-                  networkPacketsOut:"No Data",
-                  EBSIOBalance:"No Data"
+            systemStatus:data['data'][0]['data'][i].systemStatus,
+                
             
             })
            
@@ -1846,28 +1926,56 @@ latencyResult(e){
 deleteSelectedEC2=async(e,action)=>{
   this.setState({buttonclick_statusmanage:true})
   console.log("Delete",e.tableSelctedItem)
-  for (let i = 0; i < e.tableSelctedItem.length; i++) {   
-    await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
+  // for (let i = 0; i < e.tableSelctedItem.length; i++) {   
+  //   await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
 
+  // }
+  var allids=[]
+  var allregions=[]
+  for (let i = 0; i < e.tableSelctedItem.length; i++) {   
+    allids.push(e.tableSelctedItem[i].instanceId)
+    allregions.push(e.tableSelctedItem[i].region)
   }
+  await this.manageEC2(allids,allregions,action)
+  // for (let i = 0; i < e.tableSelctedItem.length; i++) {   
+  //   await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
+
+  // }
   if (action=="start"){
-    
-  var Flag=true
-    while(Flag){
-      Flag=false
-      await timer(10000)
-      for (let i = 0; i < e.tableSelctedItem.length; i++) {  
-      var check_reponse=await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,"check")
-      console.log("check_reponse")
-      console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
-      
-        if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]!="ok"){
-          Flag=true
-        }
-      }
-     
-      console.log(check_reponse)
-    }
+        var Flag=true
+        while(Flag){
+          Flag=false
+          await timer(10000)
+          
+          var check_reponse=await this.manageEC2(allids.instanceId,allregions,"check")
+          console.log("check_reponse")
+          console.log(check_reponse)
+          console.log(check_reponse[0]["data"][0]["data"]["InstanceStatuses"][0])
+           for (let i = 0; i < e.tableSelctedItem.length; i++) {   
+              if(check_reponse[0]["data"][i]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]!="ok"){
+                Flag=true
+              }
+           }
+        
+          console.log(check_reponse)
+          }
+      // var Flag=true
+      //   while(Flag){
+      //     Flag=false
+      //     await timer(10000)
+      //     for (let i = 0; i < e.tableSelctedItem.length; i++) {  
+      //     var check_reponse=await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,"check")
+      //     console.log("check_reponse")
+      //     console.log(check_reponse)
+      //     console.log(check_reponse["data"][0]["data"]["InstanceStatuses"][0])
+          
+      //       if(check_reponse["data"][0]["data"]["InstanceStatuses"][0]["SystemStatus"]["Status"]!="ok"){
+      //         Flag=true
+      //       }
+      //     }
+        
+      //     console.log(check_reponse)
+      //     }
     }
   
   this.checkInstanceTablebyUser(e.userinfo.id)

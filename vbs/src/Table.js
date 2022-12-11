@@ -47,31 +47,29 @@ export const tableColumnConfig={
         {
           Header: 'Basic Information',
           columns: [
-            {
-              Header: 'User ID',
-              accessor: 'userId',
-            },
+          
             {
               Header: 'Instance ID',
               accessor: 'instanceId',
             },
+            
             {
                 Header: 'Instance IP',
                 accessor: 'instanceIp',
               },
-            {
+              {
                 Header: 'Zone',
                 accessor: 'zone',
               },
+              {
+                Header: 'Instance Type',
+                accessor: 'instancetype',
+              }
           ],
         },
         {
-          Header: 'Metric',
+          Header: 'Status Check',
           columns: [
-            {
-              Header: 'CPUUtilization',
-              accessor: 'cpuUtilization',
-            },
            
             {
               Header: 'Instance State',
