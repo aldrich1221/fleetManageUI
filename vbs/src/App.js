@@ -3200,20 +3200,15 @@ LaunchApp() {
         </Grid>
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4}>
+            <Grid item xs={12} md={6} lg={3} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
-                {/* <ReportsBarChart
-                  color="info"
-                  title="website views"
-                  description="Last Campaign Performance"
-                  date="campaign sent 2 days ago"
-                  chart={reportsBarChartData}
-                /> */}
-                         <Card sx={{ height: "100%" }}>
-      <MDBox padding="1rem">
-       
-        <MDBox pt={3} pb={1} px={1}>
-       
+              
+  <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+    <div sytle={{ minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
+          <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+          
+            <MDBox pt={3} pb={1} px={1}>
+          
         
       
                 {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
@@ -3225,6 +3220,39 @@ LaunchApp() {
                 <MDBox mb={3}>
                 
                 <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion_v2(this.state)}>Analyze Regions</MDButton>
+               
+                {/* <select onChange={this.selectAnalysisMethod}>
+                            {analysisMethodsList}
+                          </select> */}
+                          <Grid item xs={4} md={6} lg={4}>
+                            
+                         
+                            {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
+                        </Grid>
+                </MDBox>        
+              
+      </MDBox>
+      </div>
+    </Card>
+              </MDBox>
+              
+            </Grid>
+            <Grid item xs={12} md={6} lg={3} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+              <MDBox mb={3}>
+              
+  <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+    <div sytle={{ minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
+          <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+          
+            <MDBox pt={3} pb={1} px={1}>
+          
+        
+      
+                {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
+                
+                
+              
                
                 {/* <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
@@ -3263,33 +3291,32 @@ LaunchApp() {
 
                           
                   </MDBox>
-                  Assign IP
-                          <MDBox mb={3}>
-                     
-                     </MDBox>
+         
                       <MDBox mb={3}>
                       {/* <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</MDButton>
                       <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</MDButton>
                 */}
-                 <BasicTabs_ipsetting downloadVBSIpSetting={this.downloadVBSIpSetting} sendMessage={this.sendMessage} downloadCilentServer={this.downloadCilentServer} state={this.state}/> 
+     
                      {/* <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
                 */}
                      </MDBox>
-                     Instance Status Manage {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
+                     Instance Status Manage 
+                     {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
                           
                      <MDBox mb={3}>
-                     <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
+                     {/* <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton> */}
                
                      </MDBox>
       </MDBox>
+      </div>
     </Card>
               </MDBox>
               
             </Grid>
            
-            <Grid item xs={12} md={6} lg={8}>
+            <Grid item xs={12} md={6} lg={6} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
 
               <MDBox mb={3}>
                 {/* <ReportsLineChart
@@ -3299,9 +3326,37 @@ LaunchApp() {
                   date="just updated"
                   chart={tasks}
                 /> */}
-                    <Card sx={{ height: "100%" }} sytle={{sizing, maxHeight: 300}}>
+<Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
+            
+       
+Assign IP
+                          <MDBox mb={3}>
+                          <BasicTabs_ipsetting downloadVBSIpSetting={this.downloadVBSIpSetting} sendMessage={this.sendMessage} downloadCilentServer={this.downloadCilentServer} state={this.state}/> 
+                     </MDBox>
+    </Card>
+                      
+                
+              </MDBox>
+            </Grid>
+          </Grid>
+        </MDBox>
+        <MDBox mt={4.5}>
+          <Grid container spacing={3}>
+           
+           
+            <Grid item xs={12} md={6} lg={12} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+
+              <MDBox mb={3}>
+                {/* <ReportsLineChart
+                  color="dark"
+                  title="completed tasks"
+                  description="Last Campaign Performance"
+                  date="just updated"
+                  chart={tasks}
+                /> */}
+<Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
                 <MDBox padding="1rem">
-                <BasicTabs checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
+                <BasicTabs deleteSelectedEC2={this.deleteSelectedEC2} checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
                  {/* <div style={{overflow:'scroll'}}> */}
                       {/* <ButtonGroup >
@@ -3328,7 +3383,11 @@ LaunchApp() {
             </Grid>
           </Grid>
         </MDBox>
-        
+
+
+
+
+
         {userinfo.type=="developer"?<MDBox>
           <Grid container spacing={3}>
             {/* <Grid item xs={12} md={6} lg={8}> */}

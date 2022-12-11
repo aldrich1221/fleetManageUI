@@ -61,7 +61,8 @@ export default function BasicTabs_ipsetting(props) {
         
         </Tabs>
       </Box>
-      <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}} value={value} index={0}>
+      {/* <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}} value={value} index={0}> */}
+    <TabPanel  value={value} index={0}>
         
      
                       <MDBox mb={3}>
@@ -99,7 +100,8 @@ export default function BasicTabs_ipsetting(props) {
         <MDBox mb={3}>
         </MDBox>
       </TabPanel>
-      <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}}  value={value} index={1}>
+      {/* <TabPanel style={{minWidth:'100%',maxWidth:'100%',overflow:"scroll"}}  value={value} index={1}> */}
+      <TabPanel   value={value} index={1}>
         BlueTooth
       </TabPanel>
      
