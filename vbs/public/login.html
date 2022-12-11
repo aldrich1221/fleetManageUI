@@ -1,0 +1,26 @@
+<!-- index.html -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Password</title>
+  </head>
+
+  <body>
+
+    <div style="margin: auto; width:400px; padding-top: 100px; font: 16px arial, sans-serif;">
+      <div style="width: 250px;">Please Enter The Password<br> Authorized access only.<br><br>
+      Password:<br>
+        <form name="password_form" method="post" action="javascript:location.href=window.document.password_form.page.value" style="margin:0;">
+          <div style="display:inline;">
+            <input type="password" name="page" autocorrect="off" autocapitalize="off" autofocus size="35">
+            <input type="submit" value="Enter">
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </body>
+</html>
