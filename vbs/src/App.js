@@ -21,7 +21,7 @@ import GoogleMap from "google-maps-react-markers"
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Checkboxes from './appidcheckbox.js'
-
+import Map, {Marker} from 'react-map-gl';
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
 // // import React, { Component } from "react";
@@ -260,6 +260,12 @@ class App extends Component {
       latencyTestStatus:'NoIPs',
       pingTimeState:0,
       checkedSpotInstanceConfig:false,
+
+      instanceBasicTableDataState:[],
+      instanceDetailTableDataState:[],
+      latencyTableDataState:[],
+      costTableDataState:[],
+
       // tableColumnState:'basic',
       tableDataState:[],
       tableSelctedItem:[],
@@ -1086,6 +1092,10 @@ wait(ms){
     this.setState({
       buttonclick_createEC2:false
     })
+
+    this.setState({
+      createdInstanceInfo:{'data':data['data'][0]}
+    })
     // this.checkInstanceStatus(this.state,userid)
     
     // this.setState({buttonclick_createEC2:false})
@@ -1256,8 +1266,11 @@ const data = await response_from_init.json();
     })
   }
   
-  checkInstanceDetailTableStatus(e,userid){
-    var datalist=e.tableDataState
+  checkInstanceDetailTableStatus= async (e,userid)=>{
+    console.log("checkInstanceDe")
+    // var datalist=e.tableDataState
+    var datalist=e.instanceBasicTableDataState
+
     // var userid=e.userinfo.id
     console.log("=========call  checkInstanceStatus=========== ")
     var ec2ids=[]
@@ -1354,10 +1367,7 @@ const data = await response_from_init.json();
           });
         
           }
-          )
-
-    
-    
+          )    
   }
 
   
@@ -1733,6 +1743,7 @@ const data = await response_from_init.json();
             // instanceTable:data['data'],
            
             //   displayTable:data['data'][0]['data'],
+              instanceBasicTableDataState:datalist,
               tableDataState:datalist,
               tableColumnState:'instanceTable'
               
@@ -2370,6 +2381,8 @@ getUserInfo(userid,type){
   })
   this.checkInstanceTablebyUser(userid)
   this.checkInstanceStatus(this.state,userid)
+  this.checkLatencyTablebyUser(userid)
+  this.checkCostUsage(this.state)
 
 
 
@@ -2377,14 +2390,25 @@ getUserInfo(userid,type){
 }
 
 generateUUID(type){
+
   var userid=null
+  
   var name=null
+  const queryParameters = new URLSearchParams(window.location.search)
+  const usertype = queryParameters.get("usertype")
+  const username = queryParameters.get("username")
+  console.log("==============Get URL")
+  console.log(usertype)
+  console.log(username)
+  type=usertype
+  name=username
  
+  
   if (type=='user'){
     // userid=uuid()
     userid="2a27adb1-668e-dc89-6119-58eefdeccca2"
-    name="Enterprise User"
-    
+    name=username
+    // name="username"
   }
   else{
     userid='developer-123456789'
@@ -2969,7 +2993,7 @@ LaunchApp() {
     // this.check()
   }
   componentDidMount() {
-   
+  //  this.generateUUID()
     // this.connect();
   }
   timeout = 250; 
@@ -3034,7 +3058,7 @@ LaunchApp() {
     const {chartdata,chartlabel}=this.state
     const {checkedSpotInstanceConfig}=this.state
     const userinfoString = 'Hi '+`${this.state.userinfo.id}`
-    const createdInstanceInfoString = "ID:"+`${this.state.createdInstanceInfo.data.instance_id}`+" IP: "+`${this.state.createdInstanceInfo.data.instance_ip}`+" Region: "+`${this.state.createdInstanceInfo.data.instance_region}`;
+    const createdInstanceInfoString = "Instance created! ID:"+`${this.state.createdInstanceInfo.data.instance_id}`+" IP: "+`${this.state.createdInstanceInfo.data.instance_ip}`+" Region: "+`${this.state.createdInstanceInfo.data.instance_region}`;
     let countriesList =countries.map((item, i) => {
       return (
         <option key={i} value={item.id}>{item.itemString} {item.id} {item.city} {item.country} Result: {item.result}</option>
@@ -3200,7 +3224,7 @@ LaunchApp() {
         </Grid>
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={3} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={6} lg={2} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
               
   <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
@@ -3211,10 +3235,21 @@ LaunchApp() {
           
         
       
-                {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
+               {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
                 
-                
+                <Map
+                initialViewState={{
+                  longitude: -100,
+                  latitude: 40,
+                  zoom: 3.5
+                }}
+                mapStyle="mapbox://styles/mapbox/streets-v9"
+              >
+                <Marker longitude={-100} latitude={40} anchor="bottom" >
+                  <img src="./pin.png" />
+                </Marker>
+              </Map>
                 </MDBox>
                 Find the best region {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
                 <MDBox mb={3}>
@@ -3237,11 +3272,11 @@ LaunchApp() {
               </MDBox>
               
             </Grid>
-            <Grid item xs={12} md={6} lg={3} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={6} lg={6} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
               
   <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
-    <div sytle={{ minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
+    <div sytle={{ minHeight:200,maxHeight: 200 ,overflow:'scroll'}}>
           <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
           
             <MDBox pt={3} pb={1} px={1}>
@@ -3300,9 +3335,9 @@ LaunchApp() {
                      {/* <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
                 */}
                      </MDBox>
-                     Instance Status Manage 
-                     {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
-                          
+                     {/* Instance Status Manage  */}
+                     {/* {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
+                           */}
                      <MDBox mb={3}>
                      {/* <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
@@ -3311,12 +3346,23 @@ LaunchApp() {
                      </MDBox>
       </MDBox>
       </div>
+     
     </Card>
+   
               </MDBox>
               
             </Grid>
+
+            {/* <div>
+           <iframe id="inlineFrameExample"
+                title="Inline Frame Example"
+                width="100"
+                height="200"
+                src={openstreetmapurl}>
+            </iframe>
+      </div> */}
            
-            <Grid item xs={12} md={6} lg={6} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={6} lg={4} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
 
               <MDBox mb={3}>
                 {/* <ReportsLineChart
@@ -3328,8 +3374,7 @@ LaunchApp() {
                 /> */}
 <Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
             
-       
-Assign IP
+
                           <MDBox mb={3}>
                           <BasicTabs_ipsetting downloadVBSIpSetting={this.downloadVBSIpSetting} sendMessage={this.sendMessage} downloadCilentServer={this.downloadCilentServer} state={this.state}/> 
                      </MDBox>
@@ -3356,7 +3401,7 @@ Assign IP
                 /> */}
 <Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
                 <MDBox padding="1rem">
-                <BasicTabs deleteSelectedEC2={this.deleteSelectedEC2} checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
+                <BasicTabs instanceBasicTableData={this.state.instanceBasicTableDataState} instanceDetailTableData={this.state.instanceDetailTableDataState} latencyTableData={this.state.latencyTableDataState} costTableData={this.state.costTableDataState} deleteSelectedEC2={this.deleteSelectedEC2} buttonclick_statusmanage={buttonclick_statusmanage}checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
                  {/* <div style={{overflow:'scroll'}}> */}
                       {/* <ButtonGroup >

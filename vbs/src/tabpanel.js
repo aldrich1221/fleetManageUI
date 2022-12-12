@@ -12,6 +12,8 @@ import DataTable from "./examples/Tables/DataTable";
 import { Line } from 'react-chartjs-2';
 import {Chart} from './chart.js'
 import MDButton from "./components/MDButton";
+import CircularProgress from '@mui/material/CircularProgress';
+import Map, {Marker} from 'react-map-gl';
 // import { Chart } from 'react-charts'
 // import { Chart, registerables } from 'chart.js';
 
@@ -153,7 +155,10 @@ export default function BasicTabs(props) {
   console.log(props)
   const { checkUserTable,checkInstanceTablebyUser,checkInstanceStatus,latencyResult,checkCostUsage,state,columns, data, tableSelctedItem,getInstanceCallback,checkInstanceDetailTableStatus, ...other } = props;
   const {  chartdata,chartlabel} = props;
-  const {deleteSelectedEC2}=props;
+  const {deleteSelectedEC2,buttonclick_statusmanage}=props;
+  
+  const{costTableData,latencyTableData,instanceBasicTableData,instanceDetailTableData}=props;
+  console.log("==== 4 Tables:",costTableData,latencyTableData,instanceBasicTableData,instanceDetailTableData,"===========")
   console.log(columns)
   console.log(data)
   const [value, setValue] = React.useState(0);
@@ -165,6 +170,7 @@ export default function BasicTabs(props) {
 
   const column_latency=tableColumnConfig['latencyTable']
   const column_instanceDetail=tableColumnConfig['instanceDetailTable']
+  const column_instanceBasic=tableColumnConfig['instanceTable']
   const column_cost=tableColumnConfig['costTable']
 
   const newrows=  data
@@ -230,29 +236,35 @@ export default function BasicTabs(props) {
       <TabPanel value={value} index={0}> 
           {/* <ButtonGroup > */}
                             {/* <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button> */}
-                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Basic</Button>
+                            {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
+                    
+                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)}>InstanceTable-Basic</Button>
                          
                             {/* <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button> */}
       
                       {/* </ButtonGroup> */}
-                      <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"delete")}>Delete EC2 Instance</MDButton>
+                <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"delete")}>Delete EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"stop")}>Stop EC2 Instance</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"start")}>Start EC2 Instance</MDButton>
             
           <Styles>
-            <Table columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
+            <Table columns={column_instanceBasic} data={instanceBasicTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+            </div>
           </Styles>
           </TabPanel>
 
 
 
-      <TabPanel value={value} index={1} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
+      <TabPanel value={value} index={1} >
       {/* <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"start")}>Start EC2 Instance</MDButton> */}
-          {/* <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Detail</Button> */}
-          <MDButton label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} variant="gradient" color="info" >InstanceTable-Detail</MDButton>
+          <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Detail</Button>
+          {/* <MDButton label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} variant="gradient" color="info" >InstanceTable-Detail</MDButton> */}
           
           <Styles>
-            <Table columns={column_instanceDetail} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
+            <Table columns={column_instanceDetail} data={instanceDetailTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          </div>
           </Styles>
                    
           </TabPanel>
@@ -263,7 +275,9 @@ export default function BasicTabs(props) {
                             <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
                            
           <Styles>
-            <Table columns={column_latency} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
+            <Table columns={column_latency} data={latencyTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          </div>
           </Styles>
           </TabPanel>
 
@@ -272,20 +286,22 @@ export default function BasicTabs(props) {
       <TabPanel value={value} index={3} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
           <Button label="CostTable" onClick={() =>  checkCostUsage(state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
           <Styles>
-            <Table columns={column_cost} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
+            <Table columns={column_cost} data={costTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
+          </div>
           </Styles>
       </TabPanel>
 
 
 
-      <TabPanel value={value} index={4} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
+      <TabPanel value={value} index={4}>
       <Styles> <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
                            
                 <Chart datas={chartdata} labels={chartlabel}></Chart>
               
                 </Styles>
       </TabPanel>
-      <TabPanel value={value} index={5} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
+      <TabPanel value={value} index={5} >
       <Styles> <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
               </Styles>
       </TabPanel>

@@ -15,6 +15,7 @@ function login() {
   var result = document.getElementById('result');
   var email = document.getElementById('email');
   var password = document.getElementById('password');
+  var type = document.getElementById('type');
 
   result.innerHTML = 'Login...';
 
@@ -28,31 +29,66 @@ function login() {
       email: email.value,
       password: password.value
     };
+    
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        "email": email.value,
+        "password": password.value
+    })
+    };
 
-    lambda.invoke({
-      FunctionName: 'Function_vbs_web_auth_login',
-      Payload: JSON.stringify(input)
-    }, function(err, data) {
-      if (err) console.log(err, err.stack);
-      else {
-        var output = JSON.parse(data.Payload);
-        if (!output.login) {
-          result.innerHTML = '<b>Not</b> logged in';
-        } else {
-          result.innerHTML = 'Logged in with IdentityId: ' + output.identityId + '<br>';
+    // window.open('../../index.html', '_self');
+    window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
+    // fetch(url, requestOptions)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       var output = JSON.parse(data.Payload);
+    //       if (!output.login) {
+    //         result.innerHTML = '<b>Not</b> logged in';
+    //       } else {
+    //         //result.innerHTML = 'Logged in with IdentityId: ' + output.identityId + '<br>';
 
-          // var creds = AWS.config.credentials;
-          // creds.params.IdentityId = output.identityId;
-          // creds.params.Logins = {
-          //   'cognito-identity.amazonaws.com': output.token
-          // };
-          // creds.expired = true;
-          window.location.href ='../../index.html';
-          // Do something with the authenticated role
+    //         // var creds = AWS.config.credentials;
+    //         // creds.params.IdentityId = output.identityId;
+    //         // creds.params.Logins = {
+    //         //   'cognito-identity.amazonaws.com': output.token
+    //         // };
+    //         // creds.expired = true;
+    //         window.open('../../index.html', '_self');
+    //         // window.location.href ='../../index.html';
+    //         // Do something with the authenticated role
 
-        }
-      }
-    });
+    //       }
+
+    //     })
+    
+
+    // lambda.invoke({
+    //   FunctionName: 'Function_vbs_web_auth_login',
+    //   Payload: JSON.stringify(input)
+    // }, function(err, data) {
+    //   if (err) console.log(err, err.stack);
+    //   else {
+    //     var output = JSON.parse(data.Payload);
+    //     if (!output.login) {
+    //       result.innerHTML = '<b>Not</b> logged in';
+    //     } else {
+    //       result.innerHTML = 'Logged in with IdentityId: ' + output.identityId + '<br>';
+
+    //       // var creds = AWS.config.credentials;
+    //       // creds.params.IdentityId = output.identityId;
+    //       // creds.params.Logins = {
+    //       //   'cognito-identity.amazonaws.com': output.token
+    //       // };
+    //       // creds.expired = true;
+    //       window.location.href ='../../index.html';
+    //       // Do something with the authenticated role
+
+    //     }
+    //   }
+    // });
 
 	}
 }

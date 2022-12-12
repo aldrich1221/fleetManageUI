@@ -47,6 +47,7 @@ export default function BasicTabs_ipsetting(props) {
   const { downloadVBSIpSetting,downloadCilentServer,sendMessage,state, ...other } = props;
 
   const [value, setValue] = React.useState(0);
+  const [herfvalue, setHerfvalue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -65,11 +66,11 @@ export default function BasicTabs_ipsetting(props) {
     <TabPanel  value={value} index={0}>
         
      
-                      <MDBox mb={3}>
+                      {/* <MDBox mb={3}>
                        
                           {/* <MDButton style={{textTransform: 'none'}}
                               component="a"
-                              href="https://vbs-user-website-bucket.s3.us-east-1.amazonaws.com/setIP.html"
+                              href="./setIP.html"
                               target="_blank"
                               rel="noreferrer"
                               variant="gradient"
@@ -79,21 +80,20 @@ export default function BasicTabs_ipsetting(props) {
                               Browser Trigger and USB( IE only)
                      
                      </MDButton> */}
-                     </MDBox>
+                     
+                     {/* </MDBox> */} 
                      <MDBox mb={3}>
                      Step 1 
-                     <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => downloadCilentServer(state.assignedIP)}>download CilentServer</MDButton>
+                     <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => downloadCilentServer(state.assignedIP)}>download CilentServer</MDButton> and Execute the ClientServer: server.exe
                      </MDBox>
                      
+                   
                      <MDBox mb={3}>
-                     Step 2 Execute the ClientServer: server.exe
-                     </MDBox>
-                     <MDBox mb={3}>
-                     Step 3
+                     Step 2
                       <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => downloadVBSIpSetting(state.assignedIP)}>download VBSIpSetting</MDButton>
                       </MDBox>
                      <MDBox mb={3}>
-                     Step 4 
+                     Step 3
         <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => sendMessage(state.assignedIP)}>sendIP</MDButton>
                
         </MDBox>
