@@ -13,7 +13,7 @@ import { Line } from 'react-chartjs-2';
 import {Chart} from './chart.js'
 import MDButton from "./components/MDButton";
 import CircularProgress from '@mui/material/CircularProgress';
-import Map, {Marker} from 'react-map-gl';
+// import Map, {Marker} from 'react-map-gl';
 // import { Chart } from 'react-charts'
 // import { Chart, registerables } from 'chart.js';
 

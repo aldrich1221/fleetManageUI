@@ -21,7 +21,7 @@ import GoogleMap from "google-maps-react-markers"
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Checkboxes from './appidcheckbox.js'
-import Map, {Marker} from 'react-map-gl';
+// import Map, {Marker} from 'react-map-gl';
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
 // // import React, { Component } from "react";
@@ -2993,7 +2993,7 @@ LaunchApp() {
     // this.check()
   }
   componentDidMount() {
-  //  this.generateUUID()
+   this.generateUUID()
     // this.connect();
   }
   timeout = 250; 
@@ -3092,7 +3092,9 @@ LaunchApp() {
     //   datasets: { label: "Mobile apps", data: [50, 40, 300, 320, 500, 350, 200, 230, 500] },
     // }
 
-    const userlocateionboxstring=(this.state.userinfo.longitude-0.1).toString()+"%2C"+(this.state.userinfo.latitude-0.1).toString()+"%2C"+(this.state.userinfo.longitude+0.1).toString()+"%2C"+(this.state.userinfo.latitude+0.1).toString()
+    // const userlocateionboxstring=(this.state.userinfo.longitude-180).toString()+"%2C"+(this.state.userinfo.latitude-90).toString()+"%2C"+(this.state.userinfo.longitude+180).toString()+"%2C"+(this.state.userinfo.latitude+90).toString()
+    const userlocateionboxstring="0"+"%2C"+(this.state.userinfo.latitude-90).toString()+"%2C"+"360"+"%2C"+(this.state.userinfo.latitude+90).toString()
+    
     const openstreetmapurl="https://www.openstreetmap.org/export/embed.html?bbox="+userlocateionboxstring+"&layer=mapnik"
     console.log(openstreetmapurl)
     return (
@@ -3224,33 +3226,23 @@ LaunchApp() {
         </Grid>
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={2} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={6} lg={4} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
               
   <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
-    <div sytle={{ minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
+  
+    <div sytle={{height:300, minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
           <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
           
-            <MDBox pt={3} pb={1} px={1}>
+            {/* <MDBox pt={3} pb={1} px={1}> */}
           
         
       
                {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
                 <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
                 
-                <Map
-                initialViewState={{
-                  longitude: -100,
-                  latitude: 40,
-                  zoom: 3.5
-                }}
-                mapStyle="mapbox://styles/mapbox/streets-v9"
-              >
-                <Marker longitude={-100} latitude={40} anchor="bottom" >
-                  <img src="./pin.png" />
-                </Marker>
-              </Map>
-                </MDBox>
+           
+                {/* </MDBox> */}
                 Find the best region {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
                 <MDBox mb={3}>
                 
@@ -3259,8 +3251,16 @@ LaunchApp() {
                 {/* <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select> */}
-                          <Grid item xs={4} md={6} lg={4}>
-                            
+                          <Grid item xs={12} md={6} lg={12}>
+                       
+     <iframe id="inlineFrameExample"
+                title="Inline Frame Example"
+               
+                width="100%"
+                height="100%"
+                src={openstreetmapurl}>
+            </iframe>
+    
                          
                             {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
                         </Grid>
@@ -3268,19 +3268,22 @@ LaunchApp() {
               
       </MDBox>
       </div>
+     
     </Card>
               </MDBox>
               
             </Grid>
-            <Grid item xs={12} md={6} lg={6} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={4} lg={4} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
               
   <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+                          <div style={{height:300,overflow:'scroll'}}>
+  <Grid item xs={12} md={6} lg={12} >
     <div sytle={{ minHeight:200,maxHeight: 200 ,overflow:'scroll'}}>
           <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
           
-            <MDBox pt={3} pb={1} px={1}>
-          
+            {/* <MDBox pt={3} pb={1} px={1}>
+           */}
         
       
                 {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
@@ -3292,12 +3295,12 @@ LaunchApp() {
                 {/* <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select> */}
-                          <Grid item xs={4} md={6} lg={4}>
+                          {/* <Grid item xs={6} md={6} lg={4}>
                             
                          
                             {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
-                        </Grid>
-                </MDBox>        
+                        {/* </Grid>  */}
+                {/* </MDBox>         */}
                 Create instance  {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>}
                           
                           <MDBox mb={3}>
@@ -3346,7 +3349,10 @@ LaunchApp() {
                      </MDBox>
       </MDBox>
       </div>
-     
+  
+ 
+     </Grid>
+     </div>
     </Card>
    
               </MDBox>
@@ -3362,7 +3368,7 @@ LaunchApp() {
             </iframe>
       </div> */}
            
-            <Grid item xs={12} md={6} lg={4} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={4} lg={4} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
 
               <MDBox mb={3}>
                 {/* <ReportsLineChart
@@ -3373,11 +3379,12 @@ LaunchApp() {
                   chart={tasks}
                 /> */}
 <Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
-            
+<div style={{height:300,overflow:'scroll'}}>
 
                           <MDBox mb={3}>
                           <BasicTabs_ipsetting downloadVBSIpSetting={this.downloadVBSIpSetting} sendMessage={this.sendMessage} downloadCilentServer={this.downloadCilentServer} state={this.state}/> 
                      </MDBox>
+                     </div>
     </Card>
                       
                 
@@ -3399,7 +3406,7 @@ LaunchApp() {
                   date="just updated"
                   chart={tasks}
                 /> */}
-<Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
+<Card >
                 <MDBox padding="1rem">
                 <BasicTabs instanceBasicTableData={this.state.instanceBasicTableDataState} instanceDetailTableData={this.state.instanceDetailTableDataState} latencyTableData={this.state.latencyTableDataState} costTableData={this.state.costTableDataState} deleteSelectedEC2={this.deleteSelectedEC2} buttonclick_statusmanage={buttonclick_statusmanage}checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
