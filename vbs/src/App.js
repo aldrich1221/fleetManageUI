@@ -21,6 +21,7 @@ import GoogleMap from "google-maps-react-markers"
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Checkboxes from './appidcheckbox.js'
+
 // import Map, {Marker} from 'react-map-gl';
 // const [inputTitle, setInputTitle] = useState('');
 // import CommandLine from 'react-command-line';
@@ -47,7 +48,7 @@ import theme from "./assets/theme";
 import { ThemeProvider } from "@mui/material/styles";
 import MDBox from "./components/MDBox";
 import MDTypography from "./components/MDTypography";
-import MDButton from "./components/MDButton";
+// import Button from "./components/Button";
 // Material Dashboard 2 React example components
 import DashboardLayout from "./examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "./examples/Navbars/DashboardNavbar";
@@ -60,13 +61,17 @@ import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStati
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AWS from 'aws-sdk';
 import { touchRippleClasses } from '@mui/material';
-// import fsreact from 'fs-react';
+import { MapContainer, TileLayer, Marker, Popup  } from 'react-leaflet'
+import {Chart} from './chart.js'
 
+// import {Map} from './googlemap.ts';
+// import fsreact from 'fs-react';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const axios = require('axios');
 const APIs={
-  'CreateEC2':'https://p4abcgfql8.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'DeleteEC2':'https://mo3e2gxn4a.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'CreateEC2':'https://i5b137gkg6.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'DeleteEC2':'https://jgw43jh500.execute-api.us-east-1.amazonaws.com/prod/v1',
   'QueryDB':' https://w8mk0bw6t9.execute-api.us-east-1.amazonaws.com/prod/v1',
   'AnalysisIP':'https://b0diuhkc9f.execute-api.us-east-1.amazonaws.com/prod/v1',
   'CostUsage':'https://vgwh8al5v1.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -79,7 +84,7 @@ const APIs={
   'UpdateDB':'https://hjkjl682ci.execute-api.us-east-1.amazonaws.com/prod/v1',
   'EC2Rescue':"https://r9e89v6dml.execute-api.us-east-1.amazonaws.com/prod/v1",
   'Network':"https://uhsyifylcd.execute-api.us-east-1.amazonaws.com/prod/v1"
-    
+  
 }
 
 const pako = require('pako');
@@ -445,7 +450,7 @@ class App extends Component {
       headers: { 
         'Content-Type': 'application/json',
         'Authorization':'allow',
-        'authorizationToken':'allow',
+        'authorizationtoken':'allow',
        },
       body: JSON.stringify({ 
         "ec2ids": ec2ids,
@@ -1147,7 +1152,12 @@ manageEC2=async(ids,regions,action)=>{
   };
   const response_from_init = await fetch(url,requestOptions)
   const data = await response_from_init.json();
-
+  
+  if (action=='delete'){
+    this.setState({
+      createdInstanceInfo:{'data':'Nothing'}
+    })
+  }
 
     return data
     }
@@ -1190,7 +1200,7 @@ var url=APIs['DeleteEC2']+'/user/'+this.state.userinfo.id+'/action/'+action
     headers: { 
       'Content-Type': 'application/json',
       'Authorization':'allow',
-      'authorizationToken':'allow'
+      'authorizationtoken':'allow'
      },
     body: JSON.stringify({ 
       title: 'Delete EC2',
@@ -1362,7 +1372,8 @@ const data = await response_from_init.json();
            
             //   displayTable:data['data'][0]['data'],
               tableDataState:newDataList,
-              tableColumnState:'instanceDetailTable'
+              tableColumnState:'instanceDetailTable',
+              instanceDetailTableDataState:newDataList
               
           });
         
@@ -1794,9 +1805,17 @@ const data = await response_from_init.json();
   }
 
 
-  checkLatencyTablebyCity=async (e)=>{
-    var city=e.userinfo.city
-    var userid=e.userinfo.id
+  checkLatencyTablebyCity=async (e,userid)=>{
+    const ipUrl='https://ip.nf/me.json'
+ 
+    const response_from_userip = await fetch(ipUrl,{method:"GET"})
+    const data_ip = await response_from_userip.json();
+    
+    
+    var city=data_ip.ip.city
+
+    // var city=e.userinfo.city
+    // var userid=e.userinfo.id
     console.log("wait.......")
     // sleep(10000);
     console.log("wait end")
@@ -1817,7 +1836,7 @@ const data = await response_from_init.json();
         
       datalist.push({
     
-      user_id:data['data'][0]['latencyTest'][i].user_id,
+      user_id:userid,
       userCity:data['data'][0]['latencyTest'][i].userCity,
       userIP:data['data'][0]['latencyTest'][i].userIP,
       userLatitude:data['data'][0]['latencyTest'][i].userLatitude,
@@ -1905,8 +1924,8 @@ const data = await response_from_init.json();
          
           //   displayTable:data['data'][0]['data'],
             tableDataState:datalist,
-            tableColumnState:'latencyTable'
-            
+            tableColumnState:'latencyTable',
+            latencyTableDataState:datalist
         });
         
   })
@@ -1989,7 +2008,9 @@ checkLatencyTable(userid){
 }
 latencyResult(e){
  
-  this.checkLatencyTablebyUser(e.userinfo.id)
+  // this.checkLatencyTablebyUser(e.userinfo.id)
+  this.checkLatencyTablebyUser("developer-123456789")
+  
 }
 deleteSelectedEC2=async(e,action)=>{
   this.setState({buttonclick_statusmanage:true})
@@ -2015,7 +2036,7 @@ deleteSelectedEC2=async(e,action)=>{
           Flag=false
           await timer(10000)
           
-          var check_reponse=await this.manageEC2(allids.instanceId,allregions,"check")
+          var check_reponse=await this.manageEC2(allids,allregions,"check")
           console.log("check_reponse")
           console.log(check_reponse)
           console.log(check_reponse[0]["data"][0]["data"]["InstanceStatuses"][0])
@@ -2065,7 +2086,8 @@ checkCostUsage(e){
           }
           this.setState({
               tableDataState:datalist,
-              tableColumnState:'costTable'
+              tableColumnState:'costTable',
+              costTableDataState:datalist
               
           });
         
@@ -2294,7 +2316,8 @@ createLatencyTestInstance=async (e) =>{
 
 
 }
-getUserInfo(userid,type){
+
+getUserInfo=async(userid,type)=>{
   const ipUrl='https://ip.nf/me.json'
   var ip=null
   var country=null
@@ -2304,81 +2327,134 @@ getUserInfo(userid,type){
   var name=null
   var city=null
   var userinfo=this.state.userinfo
-  fetch(ipUrl,{method:"GET"})
-  .then(res => res.json())
-  .then(data => {
-    console.log(data)
-    country=data.ip.country
-    ip=data.ip.ip
-    latitude=data.ip.latitude
-    longitude=data.ip.longitude
-    city=data.ip.city
-    console.log(userinfo)
-    this.setState({
-      userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":userinfo.other}
-    })
+
+  const response_from_userip = await fetch(ipUrl,{method:"GET"})
+  const data_ip = await response_from_userip.json();
+  console.log(data_ip)
+  var country=data_ip.ip.country
+  var ip=data_ip.ip.ip
+  var latitude=data_ip.ip.latitude
+  var longitude=data_ip.ip.longitude
+  var city=data_ip.ip.city
+  this.setState({
+    userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":userinfo.other}
+  })
+  // fetch(ipUrl,{method:"GET"})
+  // .then(res => res.json())
+  // .then(data => {
+  //   console.log(data)
+  //   country=data.ip.country
+  //   ip=data.ip.ip
+  //   latitude=data.ip.latitude
+  //   longitude=data.ip.longitude
+  //   city=data.ip.city
+  //   console.log(userinfo)
+  //   this.setState({
+  //     userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":userinfo.other}
+  //   })
  
     
-  })
-
-  
+  // })
   var url=APIs['QueryDB']+'?tableName=VBS_Enterprise_Info&userid='+userid
-  fetch(url,{method:"GET"})
-  .then(res => res.json())
-  .then(data => {
-        // this.setState({
-        //   instanceTable:data['data'],
+  const response_from_userdb = await fetch(url,{method:"GET"})
+  const data = await response_from_userdb.json();
+  console.log("==========VBS_Enterprise_Info=======")
+  console.log(data)
+  console.log("==========VBS_Enterprise_Info2=======")
+  // console.log(data[0]['userinfo'])
+  var instanceQuota=data['data'][0]['userinfo']['instanceQuota']
+  var costarray=data['data'][0]['userinfo']['cost']['ResultsByTime']
+  var username=data['data'][0]['userinfo']['username']
+  var useremail=data['data'][0]['userinfo']['email']
+  var userAMI=data['data'][0]['userinfo']['userAMI']
+  var weeklycosts=[]
+  var weeklycostlabels=[]
+  function convert_to_float(a) {
+    
+    // Type conversion
+    // of string to float
+    var floatValue = +(a);
+      
+    // Return float value
+    return floatValue;
+      }
+  console.log(instanceQuota)
+  console.log(costarray)
+    for (let i = 0; i < costarray.length; i++) {
+      weeklycosts.push(convert_to_float(costarray[i]["Total"]["AmortizedCost"]["Amount"]))
+      weeklycostlabels.push(costarray[i]["TimePeriod"]["End"])
+    }
+    var sum = weeklycosts.reduce((a, b) => a + b, 0);
+    var otherinfo={
+      "WeeklyCostSum":sum,
+      "DailyCostList":weeklycosts,
+      "DailyCostLabelList":weeklycostlabels,
+      "instanceQuota":instanceQuota,
+      "useremail":useremail,
+      "userAMI":userAMI
+    }
+    this.setState({
+      userinfo:{id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo},
+      chartdata:weeklycosts,
+      chartlabel:weeklycostlabels
+    })
+  
+  // fetch(url,{method:"GET"})
+  // .then(res => res.json())
+  // .then(data => {
+  //       // this.setState({
+  //       //   instanceTable:data['data'],
 
-        //     displayTable:data['data'][0]['data']
+  //       //     displayTable:data['data'][0]['data']
          
-        // });
-      console.log("==========VBS_Enterprise_Info=======")
-      console.log(data)
-      console.log("==========VBS_Enterprise_Info2=======")
-      // console.log(data[0]['userinfo'])
-      var instanceQuota=data['data'][0]['userinfo']['instanceQuota']
-      var costarray=data['data'][0]['userinfo']['cost']['ResultsByTime']
-      var username=data['data'][0]['userinfo']['username']
-      var useremail=data['data'][0]['userinfo']['email']
-      var userAMI=data['data'][0]['userinfo']['userAMI']
-      var weeklycosts=[]
-      var weeklycostlabels=[]
-        function convert_to_float(a) {
+  //       // });
+  //     console.log("==========VBS_Enterprise_Info=======")
+  //     console.log(data)
+  //     console.log("==========VBS_Enterprise_Info2=======")
+  //     // console.log(data[0]['userinfo'])
+  //     var instanceQuota=data['data'][0]['userinfo']['instanceQuota']
+  //     var costarray=data['data'][0]['userinfo']['cost']['ResultsByTime']
+  //     var username=data['data'][0]['userinfo']['username']
+  //     var useremail=data['data'][0]['userinfo']['email']
+  //     var userAMI=data['data'][0]['userinfo']['userAMI']
+  //     var weeklycosts=[]
+  //     var weeklycostlabels=[]
+  //       function convert_to_float(a) {
          
-          // Type conversion
-          // of string to float
-          var floatValue = +(a);
+  //         // Type conversion
+  //         // of string to float
+  //         var floatValue = +(a);
            
-          // Return float value
-          return floatValue;
-            }
-      console.log(instanceQuota)
-      console.log(costarray)
-        for (let i = 0; i < costarray.length; i++) {
-          weeklycosts.push(convert_to_float(costarray[i]["Total"]["AmortizedCost"]["Amount"]))
-          weeklycostlabels.push(costarray[i]["TimePeriod"]["End"])
-        }
-        var sum = weeklycosts.reduce((a, b) => a + b, 0);
-        var otherinfo={
-          "WeeklyCostSum":sum,
-          "DailyCostList":weeklycosts,
-          "DailyCostLabelList":weeklycostlabels,
-          "instanceQuota":instanceQuota,
-          "useremail":useremail,
-          "userAMI":userAMI
-        }
-        this.setState({
-          userinfo:{id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo},
-          chartdata:weeklycosts,
-          chartlabel:weeklycostlabels
-        })
+  //         // Return float value
+  //         return floatValue;
+  //           }
+  //     console.log(instanceQuota)
+  //     console.log(costarray)
+  //       for (let i = 0; i < costarray.length; i++) {
+  //         weeklycosts.push(convert_to_float(costarray[i]["Total"]["AmortizedCost"]["Amount"]))
+  //         weeklycostlabels.push(costarray[i]["TimePeriod"]["End"])
+  //       }
+  //       var sum = weeklycosts.reduce((a, b) => a + b, 0);
+  //       var otherinfo={
+  //         "WeeklyCostSum":sum,
+  //         "DailyCostList":weeklycosts,
+  //         "DailyCostLabelList":weeklycostlabels,
+  //         "instanceQuota":instanceQuota,
+  //         "useremail":useremail,
+  //         "userAMI":userAMI
+  //       }
+  //       this.setState({
+  //         userinfo:{id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo},
+  //         chartdata:weeklycosts,
+  //         chartlabel:weeklycostlabels
+  //       })
         
         
-  })
-  .catch(e => {
-      /*發生錯誤時要做的事情*/
-      console.log(e);
-  })
+  // })
+  // .catch(e => {
+  //     /*發生錯誤時要做的事情*/
+  //     console.log(e);
+  // })
   this.checkInstanceTablebyUser(userid)
   this.checkInstanceStatus(this.state,userid)
   this.checkLatencyTablebyUser(userid)
@@ -2389,34 +2465,36 @@ getUserInfo(userid,type){
 
 }
 
-generateUUID(type){
+generateUUID=async(type)=>{
 
   var userid=null
   
   var name=null
   const queryParameters = new URLSearchParams(window.location.search)
   const usertype = queryParameters.get("usertype")
-  const username = queryParameters.get("username")
+  const user_id = queryParameters.get("username")
   console.log("==============Get URL")
   console.log(usertype)
-  console.log(username)
+  // console.log(username)
   type=usertype
-  name=username
  
+  userid=user_id
   
-  if (type=='user'){
-    // userid=uuid()
-    userid="2a27adb1-668e-dc89-6119-58eefdeccca2"
-    name=username
-    // name="username"
-  }
-  else{
-    userid='developer-123456789'
-    name="VBS Developer"
+  // if (type=='user'){
+  //   // userid=uuid()
+  //   // userid="2a27adb1-668e-dc89-6119-58eefdeccca2"
+  //   userid=username
+  //   name=username
+  //   // name="username"
+  // }
+  // else{
+  //   userid='developer-123456789'
+  //   name="VBS Developer"
   
 
-  }
-  this.getUserInfo(userid,type)
+  // }
+  await this.getUserInfo(userid,type)
+  await this.findBestRegion_v2(this.state)
  
   console.log(this.state.userinfo)
 
@@ -2502,7 +2580,8 @@ defaultRegionSelect=async (e) =>{
 }
 
 findBestRegion_v2=async (e) =>{
-  this.setState({buttonclick_findbestregion:true})
+  this.setState({buttonclick_findbestregion:true,processbarStatus:'10'})
+
   var user_id=null
   var userinfo={
     id:e.userinfo.id,
@@ -2511,6 +2590,7 @@ findBestRegion_v2=async (e) =>{
     
   }
   const latencydatalist=await this.checkLatencyTablebyCity(e)
+  
   // const latencydatalist=[]
   console.log('latencydatalist')
   console.log(latencydatalist)
@@ -2519,6 +2599,7 @@ findBestRegion_v2=async (e) =>{
   var items=[]
   
   if (latencydatalist.length!=0){
+    this.setState({processbarStatus:'50'})
                 for (let i = 0; i <latencydatalist.length; i++) {  
                  
                   if (i==0){
@@ -2546,6 +2627,7 @@ findBestRegion_v2=async (e) =>{
                 selectedZone:defaultzone
               });
               this.setState({buttonclick_findbestregion:false})
+              this.setState({processbarStatus:'100'})
 
   }else{
   
@@ -2581,8 +2663,9 @@ findBestRegion_v2=async (e) =>{
         // {'zone':'me-south-1','instanceIP':'ec2.me-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         {'zone':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'}
       ]
-
+      this.setState({processbarStatus:'50'})
       this.httpspingtest(defulatRegionInfo)
+      this.setState({processbarStatus:'100'})
     }
   this.setState({buttonclick_findbestregion:false})
 }
@@ -2791,55 +2874,55 @@ LaunchApp() {
     // }).on('error', function(err) {
     // }).connect('XXX.XXX.XXX.XXX', 3389);
   }
-  downloadCilentServer=async()=>{
+  // downloadCilentServer=async()=>{
    
-    // fetch('https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/server.exe', {
-    //   method: 'GET',
+  //   // fetch('https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/server.exe', {
+  //   //   method: 'GET',
       
-    // })
-    // .then((response) => response.blob())
-    // .then((blob) => {
-    //   // Create blob link to download
-    //   const url = window.URL.createObjectURL(
-    //     new Blob([blob]),
-    //   );
-    //   const link = document.createElement('a');
-    //   link.href = url;
-    //   link.setAttribute(
-    //     'download',
-    //     `server.exe`,
-    //   );
+  //   // })
+  //   // .then((response) => response.blob())
+  //   // .then((blob) => {
+  //   //   // Create blob link to download
+  //   //   const url = window.URL.createObjectURL(
+  //   //     new Blob([blob]),
+  //   //   );
+  //   //   const link = document.createElement('a');
+  //   //   link.href = url;
+  //   //   link.setAttribute(
+  //   //     'download',
+  //   //     `server.exe`,
+  //   //   );
   
-    //   // Append to html link element page
-    //   document.body.appendChild(link);
+  //   //   // Append to html link element page
+  //   //   document.body.appendChild(link);
   
-    //   // Start download
-    //   link.click();
+  //   //   // Start download
+  //   //   link.click();
   
-    //   // Clean up and remove the link
-    //   link.parentNode.removeChild(link);
-    // });
+  //   //   // Clean up and remove the link
+  //   //   link.parentNode.removeChild(link);
+  //   // });
 
-    fetch('https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/server.exe', {
-      method: 'GET',
-      // 其他設定或是需要傳遞的資料
-    })
-      .then((response) => response.blob())
-      .then((blob) => {
-        var url = window.URL.createObjectURL(blob); // create url from blob
-        var fileLink = document.createElement('a'); // create link for file
-        fileLink.href = url;
-        fileLink.download = 'server.exe'; // download filename
-        document.body.appendChild(fileLink); // append file link to download
-        fileLink.click();
-        fileLink.remove(); // remove file link after click
-      })
-      .catch((error) => {
-        // Handle error here.
-      });
+  //   fetch('', {
+  //     method: 'GET',
+  //     // 其他設定或是需要傳遞的資料
+  //   })
+  //     .then((response) => response.blob())
+  //     .then((blob) => {
+  //       var url = window.URL.createObjectURL(blob); // create url from blob
+  //       var fileLink = document.createElement('a'); // create link for file
+  //       fileLink.href = url;
+  //       fileLink.download = 'server.exe'; // download filename
+  //       document.body.appendChild(fileLink); // append file link to download
+  //       fileLink.click();
+  //       fileLink.remove(); // remove file link after click
+  //     })
+  //     .catch((error) => {
+  //       // Handle error here.
+  //     });
 
 
-  }
+  // }
 
   downloadFlowLogs=async()=>{
     AWS.config.update(
@@ -2935,37 +3018,149 @@ LaunchApp() {
     // });
   }
 
-  downloadVBSIpSetting=async()=>{
-   
-    fetch(' https://aldrichpublic.s3.ap-northeast-1.amazonaws.com/VBSIpSetting.zip', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/pdf',
-      },
-    })
-    .then((response) => response.blob())
-    .then((blob) => {
-      // Create blob link to download
-      const url = window.URL.createObjectURL(
-        new Blob([blob]),
-      );
+  downloadCilentServer=async()=>{
+    AWS.config.update(
+      {
+        accessKeyId: "AKIA4T2RLXBEA3M2SN4H",
+        secretAccessKey: "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",
+      }
+    );
+    var s3 = new AWS.S3();
+    const params = {
+      Bucket:"vbs-tempfile-bucket-htc",
+      Key: "IPSetting/server.exe",
+    };
+    function downloadBlob(blob, name) {
+      // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+      const blobUrl = URL.createObjectURL(blob);
+      // Create a link element
       const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute(
-        'download',
-        `VBSIpSetting.zip`,
-      );
-  
-      // Append to html link element page
+      // Set link's href to point to the Blob URL
+      link.href = blobUrl;
+      link.download = name;
+      // Append link to the body
       document.body.appendChild(link);
-  
-      // Start download
-      link.click();
-  
-      // Clean up and remove the link
-      link.parentNode.removeChild(link);
+      // Dispatch click event on the link
+      // This is necessary as link.click() does not work on the latest firefox
+      link.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        })
+      );
+
+      // Remove link from body
+      document.body.removeChild(link);
+    }
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log(data)
+        // const compressed = new Uint8Array();
+        // const result=pako.inflate(data.Body, { to: 'string' })
+        // this.setState({resultDisplayString:result})
+        
+        // console.log(result)
+        // const result = new Uint8Array(data.Body);
+        let newBlob = new Blob([data.Body], {
+          type: 'application/vnd.microsoft.portable-executable;',
+        });
+        downloadBlob(newBlob, `server.exe`);
+      }
     });
   }
+
+  downloadVBSIpSetting=async()=>{
+    AWS.config.update(
+      {
+        accessKeyId: "AKIA4T2RLXBEA3M2SN4H",
+        secretAccessKey: "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",
+      }
+    );
+    var s3 = new AWS.S3();
+    const params = {
+      Bucket:"vbs-tempfile-bucket-htc",
+      Key: "IPSetting/VBSIpSetting.zip",
+    };
+    function downloadBlob(blob, name = `$.zip`) {
+      // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+      const blobUrl = URL.createObjectURL(blob);
+      // Create a link element
+      const link = document.createElement('a');
+      // Set link's href to point to the Blob URL
+      link.href = blobUrl;
+      link.download = name;
+      // Append link to the body
+      document.body.appendChild(link);
+      // Dispatch click event on the link
+      // This is necessary as link.click() does not work on the latest firefox
+      link.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        })
+      );
+
+      // Remove link from body
+      document.body.removeChild(link);
+    }
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log(data)
+        // const compressed = new Uint8Array();
+        // const result=pako.inflate(data.Body, { to: 'string' })
+        // this.setState({resultDisplayString:result})
+        
+        // console.log(result)
+        let newBlob = new Blob([data.Body], {
+          type: 'application/zip;',
+        });
+        downloadBlob(newBlob, `VBSIpSetting`);
+      }
+    });
+  }
+
+  // downloadVBSIpSetting=async()=>{
+   
+  //   fetch('', {
+  //     method: 'GET',
+  //     headers: {
+  //       'Content-Type': 'application/pdf',
+  //     },
+  //   })
+  //   .then((response) => response.blob())
+  //   .then((blob) => {
+  //     // Create blob link to download
+  //     const url = window.URL.createObjectURL(
+  //       new Blob([blob]),
+  //     );
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.setAttribute(
+  //       'download',
+  //       `VBSIpSetting.zip`,
+  //     );
+  
+  //     // Append to html link element page
+  //     document.body.appendChild(link);
+  
+  //     // Start download
+  //     link.click();
+  
+  //     // Clean up and remove the link
+  //     link.parentNode.removeChild(link);
+  //   });
+  // }
+
+
+
+
+
   onKeyUp(event) {
     if (event.charCode === 13) {
       console.log(event.target.value)
@@ -3117,6 +3312,7 @@ LaunchApp() {
                 other2={userinfo.other.userAMI}
                 title={userinfo.id}
                 count={userinfo.name}
+              
                 percentage={{
                   color: "success",
                   amount: userinfo.ip,
@@ -3197,7 +3393,7 @@ LaunchApp() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-          
+      
               <ComplexStatisticsCard
                 color="primary"
                 other={""}
@@ -3226,10 +3422,10 @@ LaunchApp() {
         </Grid>
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+            {/* <Grid item xs={12} md={6} lg={4} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
               <MDBox mb={3}>
               
-  <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
+  {/* <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
   
     <div sytle={{height:300, minHeight:100,maxHeight: 100 ,overflow:'scroll'}}>
           <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
@@ -3238,56 +3434,76 @@ LaunchApp() {
           
         
       
-               {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
+               {/* <Button  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</Button>
+                <Button  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</Button> */}
                 
            
                 {/* </MDBox> */}
-                Find the best region {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
-                <MDBox mb={3}>
+                {/* Find the best region {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>} */}
+                {/* <MDBox mb={3}> */}
                 
-                <MDButton  variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion_v2(this.state)}>Analyze Regions</MDButton>
+                {/* <Button  variant="outlined" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion_v2(this.state)}>Analyze Regions</Button> */}
                
                 {/* <select onChange={this.selectAnalysisMethod}>
                             {analysisMethodsList}
                           </select> */}
-                          <Grid item xs={12} md={6} lg={12}>
+                          {/* <Grid item xs={12} md={6} lg={12}> */}
                        
-     <iframe id="inlineFrameExample"
+     {/* <iframe id="inlineFrameExample"
                 title="Inline Frame Example"
                
                 width="100%"
                 height="100%"
                 src={openstreetmapurl}>
-            </iframe>
+            </iframe> */}
+                {/* <MapContainer center={[40.505, -100.09]} zoom={13} >
+  
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          <Marker position={[40.505, -100.09]}>
+                <Popup>
+                  I am a pop-up!
+                </Popup>
+            </Marker>
+          </MapContainer> */}
+            {/* <Map></Map> */}
     
                          
                             {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
-                        </Grid>
+                        {/* </Grid>
                 </MDBox>        
               
       </MDBox>
-      </div>
+      </div> */}
      
-    </Card>
-              </MDBox>
+    {/* </Card>  */}
+              {/* </MDBox> */}
               
-            </Grid>
-            <Grid item xs={12} md={4} lg={4} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
-              <MDBox mb={3}>
+            {/* </Grid> */} 
+            <Grid item xs={12} md={7} lg={7} ys={12} sytle={{ minheight:300, maxHeight: 300,overflow:"scroll"}}>
+              <MDBox mb={3} >
               
-  <Card sx={{ height: "100%" }} sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
-                          <div style={{height:300,overflow:'scroll'}}>
-  <Grid item xs={12} md={6} lg={12} >
-    <div sytle={{ minHeight:200,maxHeight: 200 ,overflow:'scroll'}}>
-          <MDBox padding="1rem" sytle={{ maxHeight: 100 ,overflow:'scroll'}}>
-          
+  <Card sx={{ height: "100%" }} >
+                       
+  {/* <Grid item xs={12} md={12} lg={12} > */}
+  
+          <MDBox padding="1rem">
+          <Grid container spacing={3}>
+            
+              <Grid item xs={12} md={6} lg={6} >
+          {/* <div style={{height:250,'overflow-y':"scroll",'overflow-x':"auto"}}> */}
+        <div style={{height:250}}> 
+
+  {/* <div style={{height:300,'overflow-y':"scroll",'overflow-x':"auto"}}> */}
+         
             {/* <MDBox pt={3} pb={1} px={1}>
            */}
         
       
-                {/* <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</MDButton> */}
+                {/* <Button  variant="gradient" color="info" onClick={() => this.generateUUID('user')}>Get User ID</Button>
+                <Button  variant="gradient" color="info" onClick={() => this.generateUUID('developer')}>Get Developer ID</Button> */}
                 
                 
               
@@ -3301,58 +3517,86 @@ LaunchApp() {
                             {/* <Progressbar bgcolor="#99ccff" progress={this.state.processbarStatus}  width='90%' height={30} /> */}
                         {/* </Grid>  */}
                 {/* </MDBox>         */}
-                Create instance  {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>}
+
+                <select onChange={this.selectCountry}>
+                            {countriesList}
+                          </select>
+                <Button  variant="outlined" color="info" style={{textTransform: 'none'}} onClick={() => this.findBestRegion_v2(this.state)}>Refresh Regions</Button>
+                {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
+               
                           
                           <MDBox mb={3}>
                             <Grid>
                           <select onChange={this.selectAMI}>
                             {amiList}
                           </select>
-                          <select onChange={this.selectCountry}>
-                            {countriesList}
-                          </select>
+                         
                           <select onChange={this.selectInstanceType}>
                             {instanceTypeList}
                           </select>
                           <Checkboxes handleChangeAPPSelectList={this.handleChangeAPPSelectList}/>
 
-                          On-Demand
+                          {/* On-Demand
                           <Switch
                             checked={checkedSpotInstanceConfig}
                             onChange={this.handleChangeSwithSpotInstanceConfig}
                             inputProps={{ 'aria-label': 'controlled'}}
                           />
-                          Spot
+                          Spot */}
                           </Grid>
-                  <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.createEC2_v2(this.state)}>Create AWS EC2 Instance</MDButton>
+                          
+                  <Button variant="outlined" color="green" style={{'background-color':'green',color:'white',textTransform: 'none',width: '100%' }} onClick={() => this.createEC2_v2(this.state)}>Create Server</Button>
+                  {/* {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>} */}
+               
+                  {/* <Button variant="outlined" color="green" style={{'background-color':'red',color:'white',textTransform: 'none',width: '100%' }} onClick={() => this.manageEC2([this.state.createdInstanceInfo.data.instance_id],[this.state.createdInstanceInfo.data.instance_region],"delete")}>Delete Server</Button> */}
+                  {/* {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>} */}
                  
 
                           
                   </MDBox>
          
                       <MDBox mb={3}>
-                      {/* <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</MDButton>
-                      <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</MDButton>
+                      {/* <Button variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => this.downloadVBSIpSetting(this.state.assignedIP)}>download VBSIpSetting</Button>
+                      <Button variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => this.downloadCilentServer(this.state.assignedIP)}>download CilentServer</Button>
                 */}
      
-                     {/* <MDButton variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</MDButton>
+                     {/* <Button variant="gradient" color="info" onClick={() => this.sendMessage(this.state.assignedIP)}>sendIP</Button>
                 */}
                      </MDBox>
                      {/* Instance Status Manage  */}
                      {/* {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
                            */}
                      <MDBox mb={3}>
-                     {/* <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</MDButton> */}
+                     {/* <Button  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"delete")}>Delete EC2 Instance</Button>
+                <Button  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"stop")}>Stop EC2 Instance</Button>
+                <Button  variant="gradient" color="info" onClick={() => this.deleteSelectedEC2(this.state,"start")}>Start EC2 Instance</Button> */}
                
                      </MDBox>
+                   
+                     </div>
+
+                     </Grid>
+      
+                     <Grid item xs={12} md={6} lg={6} >
+                     {/* <div style={{ border:"#0000FF 5px solid",borderWidth: 0.5,borderBlockStyle:"solid",borderBlockColor: "gray"}} > */}
+                     <p style={{border:"gray 0.5px dotted"}}>
+                      <div style={{height:230}}>
+                     {buttonclick_createEC2==true?<div><CircularProgress size="1rem"  color="secondary" />   initializing...</div>:<div></div>}
+                     {buttonclick_findbestregion==true?<div><CircularProgressWithLabel processbarStatus={this.state.processbarStatus} />   Latency testing...</div>:<div></div>}
+                     {/* {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>} */}
+                     {this.state.createdInstanceInfo.data=='Nothing'?<div></div>:<div> {createdInstanceInfoString}</div>}
+                     </div>
+                     </p>
+                     {/* </div> */}
+                      </Grid>
+                     
+              </Grid>
       </MDBox>
-      </div>
+      
   
  
-     </Grid>
-     </div>
+     {/* </Grid> */}
+     {/* </div> */}
     </Card>
    
               </MDBox>
@@ -3368,7 +3612,7 @@ LaunchApp() {
             </iframe>
       </div> */}
            
-            <Grid item xs={12} md={4} lg={4} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={5} lg={5} ys={12} sytle={{ minheight:300,maxHeight: 300,'overflow-y':"scroll",'overflow-x':"auto"}}>
 
               <MDBox mb={3}>
                 {/* <ReportsLineChart
@@ -3378,13 +3622,15 @@ LaunchApp() {
                   date="just updated"
                   chart={tasks}
                 /> */}
-<Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
-<div style={{height:300,overflow:'scroll'}}>
+          <Card sx={{ height: "100%" }} sytle={{ maxHeight: 300}}>
+          <MDBox padding="1rem">
+          <div style={{height:250,'overflow-y':"scroll",'overflow-x':"auto"}}>
+       
 
-                          <MDBox mb={3}>
                           <BasicTabs_ipsetting downloadVBSIpSetting={this.downloadVBSIpSetting} sendMessage={this.sendMessage} downloadCilentServer={this.downloadCilentServer} state={this.state}/> 
-                     </MDBox>
+                  
                      </div>
+                     </MDBox>
     </Card>
                       
                 
@@ -3392,11 +3638,13 @@ LaunchApp() {
             </Grid>
           </Grid>
         </MDBox>
+
+        {/*////////////////////////////////////////////////////////////////////*/}
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
            
            
-            <Grid item xs={12} md={6} lg={12} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+            <Grid item xs={12} md={12} lg={12} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
 
               <MDBox mb={3}>
                 {/* <ReportsLineChart
@@ -3406,8 +3654,9 @@ LaunchApp() {
                   date="just updated"
                   chart={tasks}
                 /> */}
-<Card >
+            <Card >
                 <MDBox padding="1rem">
+              
                 <BasicTabs instanceBasicTableData={this.state.instanceBasicTableDataState} instanceDetailTableData={this.state.instanceDetailTableDataState} latencyTableData={this.state.latencyTableDataState} costTableData={this.state.costTableDataState} deleteSelectedEC2={this.deleteSelectedEC2} buttonclick_statusmanage={buttonclick_statusmanage}checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/> 
                   <MDBox pt={1} pb={1} px={1}>
                  {/* <div style={{overflow:'scroll'}}> */}
@@ -3427,16 +3676,41 @@ LaunchApp() {
                         {/* </div> */}
 
                         </MDBox>
-      </MDBox>
-    </Card>
-                      
+                    </MDBox>
+                   </Card>
+                          
+                    
+                  </MDBox>
+                </Grid>
+              </Grid>
+        </MDBox>
+
+        <MDBox mt={4.5}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={12} lg={12} ys={12} sytle={{ minheight:300,maxHeight: 300,overflow:"scroll"}}>
+
+              <MDBox mb={3}>
                 
+               <Card >
+                <MDBox padding="1rem">
+              
+                {/* <BasicTabs instanceBasicTableData={this.state.instanceBasicTableDataState} instanceDetailTableData={this.state.instanceDetailTableDataState} latencyTableData={this.state.latencyTableDataState} costTableData={this.state.costTableDataState} deleteSelectedEC2={this.deleteSelectedEC2} buttonclick_statusmanage={buttonclick_statusmanage}checkInstanceDetailTableStatus={this.checkInstanceDetailTableStatus} chartdata={chartdata} chartlabel={chartlabel} checkInstanceTablebyUser={this.checkInstanceTablebyUser} checkInstanceStatus={this.checkInstanceStatus} latencyResult={this.latencyResult} checkCostUsage={this.checkCostUsage} state={this.state} checkUserTable={this.checkUserTable} columns={columns} data={data} tableSelctedItem={tableSelctedItem} getInstanceCallback={this.reactTableInstance}/>  */}
+               
+              <Styles> 
+              
+                <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}> 
+                        <Chart datas={chartdata} labels={chartlabel}></Chart>
+                      </div>
+                        </Styles>
+     
+                    </MDBox>
+                   </Card>
+                          
+                    
               </MDBox>
             </Grid>
           </Grid>
-        </MDBox>
-
-
+    </MDBox>
 
 
 
@@ -3468,26 +3742,26 @@ LaunchApp() {
         <MDBox pt={1} pb={1} px={1}>
           
              
-                <MDButton  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</MDButton>
+                <Button  variant="gradient" color="info" onClick={() => this.checkInstanceRouteAnalysis(this.state)}>Route Analysis</Button>
                 </MDBox>
 
                 <MDBox pt={1} pb={1} px={1}>
-                <MDButton  variant="gradient" color="info" onClick={() => this.issuehandle(this.state)}>debug</MDButton>
+                <Button  variant="gradient" color="info" onClick={() => this.issuehandle(this.state)}>debug</Button>
                 <select onChange={this.selectRescueAction}>
                             {rescueActionsList}
                           </select>
                   </MDBox>
 
                 <MDBox pt={1} pb={1} px={1}>
-                <MDButton  variant="gradient" color="info" onClick={() => this.createFlowLogs(this.state)}>Flow Log Analysis</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => this.downloadFlowLogs(this.state)}> Flow Log Download</MDButton>
+                <Button  variant="gradient" color="info" onClick={() => this.createFlowLogs(this.state)}>Flow Log Analysis</Button>
+                <Button  variant="gradient" color="info" onClick={() => this.downloadFlowLogs(this.state)}> Flow Log Download</Button>
 
                 
-                <MDButton  variant="gradient" color="info" onClick={() => this.rdpConnect(this.state)}>RDP connect</MDButton>
+                <Button  variant="gradient" color="info" onClick={() => this.rdpConnect(this.state)}>RDP connect</Button>
                
                 </MDBox>
                 <MDBox mb={3}>
-                <MDButton  variant="gradient" color="info" onClick={() => this.handleClickPing(this.state)}>Http ping</MDButton>
+                <Button  variant="gradient" color="info" onClick={() => this.handleClickPing(this.state)}>Http ping</Button>
                 
 
                               
@@ -3513,9 +3787,9 @@ LaunchApp() {
                     <Card sx={{ height: "100%" }}>
                               <MDBox padding="1rem">
                                                   <button onClick={()=>this.resultClear()}>Result Clear</button>
-                                                  <MDButton  variant="gradient" color="info" onClick={() => this.getTest()}>Test1</MDButton>
-                                                  <MDButton  variant="gradient" color="info" onClick={() => this.putTest()}>Test2</MDButton>
-                                                  <MDButton  variant="gradient" color="info" onClick={() => this.postTest()}>Test3</MDButton>
+                                                  <Button  variant="gradient" color="info" onClick={() => this.getTest()}>Test1</Button>
+                                                  <Button  variant="gradient" color="info" onClick={() => this.putTest()}>Test2</Button>
+                                                  <Button  variant="gradient" color="info" onClick={() => this.postTest()}>Test3</Button>
                   
                                                                 <MDBox pt={1} pb={1} px={1}>
                                                                                         <div style={section_result}>

@@ -82,20 +82,22 @@ export default function BasicTabs_ipsetting(props) {
                      </MDButton> */}
                      
                      {/* </MDBox> */} 
-                     <MDBox mb={3}>
-                     Step 1 
-                     <MDButton variant="gradient" color="info"  style={{textTransform: 'none'}} onClick={() => downloadCilentServer(state.assignedIP)}>download CilentServer</MDButton> and Execute the ClientServer: server.exe
+                     Please follow the guidelines as below:
+                     <MDBox mb={1}>
+                     First,download
+                     <Button  variant="outlined" color="info"  style={{textTransform: 'none'}} onClick={() => downloadCilentServer(state.assignedIP)}>CilentServer</Button> and execute the ClientServer: server.exe
                      </MDBox>
                      
                    
-                     <MDBox mb={3}>
-                     Step 2
-                      <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => downloadVBSIpSetting(state.assignedIP)}>download VBSIpSetting</MDButton>
+                     <MDBox mb={1}>
+                     Then,download
+                     <Button  variant="outlined" color="info" style={{textTransform: 'none'}} onClick={() => downloadVBSIpSetting(state.assignedIP)}>VBSIpSetting</Button>
+                      tool
                       </MDBox>
-                     <MDBox mb={3}>
-                     Step 3
-        <MDButton variant="gradient" color="info" style={{textTransform: 'none'}} onClick={() => sendMessage(state.assignedIP)}>sendIP</MDButton>
-               
+                     <MDBox mb={1}>
+                     Finally,click 
+                     <Button  variant="outlined" color="info" style={{textTransform: 'none'}} onClick={() => sendMessage(state.assignedIP)}>sendIP</Button>
+                     to trigger ip setting.
         </MDBox>
         <MDBox mb={3}>
         </MDBox>

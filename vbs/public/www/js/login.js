@@ -10,7 +10,7 @@ AWS.config.update(
 );
 var lambda = new AWS.Lambda();
 
-function login() {
+const login = async()=> {
 
   var result = document.getElementById('result');
   var email = document.getElementById('email');
@@ -31,16 +31,32 @@ function login() {
     };
     
     const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        "email": email.value,
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'userid':email.value,
         "password": password.value
-    })
+      },
+     
     };
 
-    // window.open('../../index.html', '_self');
     window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
+
+
+    // var url="https://ibsh7lbab6.execute-api.us-east-1.amazonaws.com/prod/v1"
+    // const response_from_init = await fetch(url,requestOptions)
+    // const data = await response_from_init.json();
+    // console.log("=======response from webAuth------------")
+    // console.log(data)
+    // if (data.login==true){
+
+
+    // // window.open('../../index.html', '_self');
+    //   window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
+    // }
+    // else {
+    //             result.innerHTML = '<b>Not</b> logged in';
+    //           }
     // fetch(url, requestOptions)
     //     .then(response => response.json())
     //     .then(data => {

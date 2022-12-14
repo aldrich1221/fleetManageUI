@@ -67,13 +67,16 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon ,other,ot
             {percentage.amount}
           </MDTypography>
           &nbsp;{percentage.label}
+
+          &nbsp;{other} 
         </MDTypography>
-        <MDTypography variant="button" fontWeight="light" color="text">
-            {other}
+        {/* <MDTypography variant="button" fontWeight="light" color="text">
+            {other} 
           </MDTypography>
-          <MDTypography variant="button" fontWeight="light" color="text">
+           */}
+          {/* <MDTypography variant="button" fontWeight="light" color="text">
             {other2}
-          </MDTypography>
+          </MDTypography> */}
       </MDBox>
       </div>
     </Card>

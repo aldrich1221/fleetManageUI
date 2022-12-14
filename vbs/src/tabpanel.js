@@ -226,9 +226,9 @@ export default function BasicTabs(props) {
           <Tab label="Detail Table" {...a11yProps(1)} />
           <Tab label="Latency Table" {...a11yProps(2)} />
           <Tab label="Cost Table" {...a11yProps(3)} />
-          <Tab label="Chart" {...a11yProps(4)} />
-          <Tab label="Content Dashboard" {...a11yProps(5)} />
-          <Tab label="Remote Desktop" {...a11yProps(6)} />
+          {/* <Tab label="Chart" {...a11yProps(4)} /> */}
+          {/* <Tab label="Content Dashboard" {...a11yProps(5)} /> */}
+          {/* <Tab label="Remote Desktop" {...a11yProps(6)} /> */}
          
         </Tabs>
       </Box>
@@ -238,14 +238,14 @@ export default function BasicTabs(props) {
                             {/* <Button label="UserTable" onClick={() =>checkUserTable(state)} style={{color:'black','backgroundColor':'#aafab1'}}>UserTable</Button> */}
                             {buttonclick_statusmanage==true?<div><CircularProgress size="1rem"  color="secondary" />   processing...</div>:<div></div>}
                     
-                            <Button label="InstanceTable" onClick={() =>checkInstanceTablebyUser(state.userinfo.id)}>InstanceTable-Basic</Button>
+                            <Button label="InstanceTable" variant="outlined" style={{textTransform: 'none'}} onClick={() =>checkInstanceTablebyUser(state.userinfo.id)}>Refresh</Button>
                          
                             {/* <Button label="Launch the executable" onClick={() => this.LaunchApp("Result")} style={{color:'black','backgroundColor':'#aafab1'}}>Launch the executable</Button> */}
       
                       {/* </ButtonGroup> */}
-                <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"delete")}>Delete EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"stop")}>Stop EC2 Instance</MDButton>
-                <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"start")}>Start EC2 Instance</MDButton>
+                <Button  variant="contained" style={{textTransform: 'none'}} color="info" onClick={() => deleteSelectedEC2(state,"delete")}>Delete</Button>
+                <Button  variant="contained" style={{textTransform: 'none'}} color="info" onClick={() => deleteSelectedEC2(state,"stop")}>Stop</Button>
+                <Button  variant="contained" style={{textTransform: 'none'}} color="info" onClick={() => deleteSelectedEC2(state,"start")}>Start</Button>
             
           <Styles>
           <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
@@ -258,9 +258,10 @@ export default function BasicTabs(props) {
 
       <TabPanel value={value} index={1} >
       {/* <MDButton  variant="gradient" color="info" onClick={() => deleteSelectedEC2(state,"start")}>Start EC2 Instance</MDButton> */}
-          <Button label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} style={{color:'black','backgroundColor':'#aafab1'}}>InstanceTable-Detail</Button>
+          {/* <MDButton label="InstanceTable-UpdateStatus" style={{textTransform: 'none'}} onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} >InstanceTable-Detail</MDButton> */}
           {/* <MDButton label="InstanceTable-UpdateStatus" onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)} variant="gradient" color="info" >InstanceTable-Detail</MDButton> */}
-          
+          <Button label="InstanceTable-UpdateStatus" variant="outlined" style={{textTransform: 'none'}} onClick={() =>checkInstanceDetailTableStatus(state,state.userinfo.id)}>Refresh</Button>
+                         
           <Styles>
           <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
             <Table columns={column_instanceDetail} data={instanceDetailTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
@@ -271,8 +272,9 @@ export default function BasicTabs(props) {
 
 
 
-<TabPanel value={value} index={2} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
-                            <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
+<TabPanel value={value} index={2}  >
+                            {/* <Button label="LatencyTable"  onClick={() => latencyResult(state)} style={{textTransform: 'none',color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button> */}
+                            <Button label="LatencyTable" variant="outlined"  onClick={() => latencyResult(state)} style={{textTransform: 'none'}}>Refresh</Button>
                            
           <Styles>
           <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
@@ -283,8 +285,8 @@ export default function BasicTabs(props) {
 
 
 
-      <TabPanel value={value} index={3} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
-          <Button label="CostTable" onClick={() =>  checkCostUsage(state)} style={{color:'black','backgroundColor':'#aafab1'}}>CostTable</Button>
+      <TabPanel value={value} index={3}  >
+          <Button label="CostTable" variant="outlined"  onClick={() =>  checkCostUsage(state)} style={{textTransform: 'none'}}>Refresh</Button>
           <Styles>
           <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}>
             <Table columns={column_cost} data={costTableData} tableSelctedItem={tableSelctedItem} getInstanceCallback={getInstanceCallback} />
@@ -294,23 +296,25 @@ export default function BasicTabs(props) {
 
 
 
-      <TabPanel value={value} index={4}>
-      <Styles> <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
-                           
+      {/* <TabPanel value={value} index={4}>
+      <Styles> 
+      
+        <div style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',"overflowX":"scroll","overflowY":"auto"}}> 
                 <Chart datas={chartdata} labels={chartlabel}></Chart>
-              
+              </div>
                 </Styles>
-      </TabPanel>
-      <TabPanel value={value} index={5} >
-      <Styles> <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
+      </TabPanel> */}
+      {/* <TabPanel value={value} index={5} >
+      <Styles> 
+      
               </Styles>
       </TabPanel>
-      <TabPanel value={value} index={6} style={{minWidth:'100%',maxWidth:'100%',maxHeight:'100%',overflow:"scroll"}} >
-      <Styles> <Button label="LatencyTable" onClick={() => latencyResult(state)} style={{color:'black','backgroundColor':'#aafab1'}}>LatencyTable</Button>
-              
-        Item Three
+      <TabPanel value={value} index={6}  >
+      <Styles> 
+             
+       
         </Styles>
-      </TabPanel>
+      </TabPanel> */}
     </Box>
   );
 }

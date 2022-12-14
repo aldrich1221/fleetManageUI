@@ -292,8 +292,8 @@ table {
   td {
     margin: 0;
     padding: 0.5rem;
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
+    border-bottom: 1px dotted black;
+    border-right: 1px dotted black;
 
     :last-child {
       border-right: 0;
@@ -427,10 +427,13 @@ export function Table({ columns, data,tableSelctedItem,getInstanceCallback}) {
           </thead>
           <tbody {...getTableBodyProps()}>
             {page.map((row, i) => {
+              console.log("Table Row========")
+              console.log(row)
               prepareRow(row)
               return (
                 <tr {...row.getRowProps()}>
                   {row.cells.map(cell => {
+                    console.log("Cell",cell)
                     return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                   })}
                 </tr>
