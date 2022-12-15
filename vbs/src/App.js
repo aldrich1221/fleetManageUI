@@ -245,6 +245,7 @@ class App extends Component {
       tableDataState:[{'firstName':'None'}],
       tableSelctedItem:[],
 
+      usageInstanceNumber:'',
       userinfo: {ip:null,city:null,id:null,name:null,type:null,other:{'WeeklyCostSum':'','DailyCostList':[],'instanceQuota':'','useremail':'','userAMI':''}},
       suitableZones:[],
       assignedIP:'',
@@ -294,7 +295,7 @@ class App extends Component {
       instanceType: [
         {id: 'g4dn.2xlarge', name: 'g4dn.2xlarge'},
         {id: 'g4dn.xlarge', name: 'g4dn.xlarge'},
-        {id: 't3.medium', name: 't3.medium'},
+        // {id: 't3.medium', name: 't3.medium'},
         
       ],
       analysisMethods: [
@@ -1025,8 +1026,8 @@ wait(ms){
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json' ,
-      'authorization':'allow',
-        'authorizationtoken':'allow'
+      'authorization':this.state.apitoken,
+        'authorizationtoken':this.state.apitoken
     },
     body: JSON.stringify({ 
       "userAMI": userAMI,
@@ -1060,7 +1061,7 @@ wait(ms){
   //       /*發生錯誤時要做的事情*/
   //       console.log(e);
   //   })
-   
+  this.checkInstanceTablebyUser(userid)
     console.log("check status")
     var Flag=true
     while(Flag){
@@ -1373,8 +1374,8 @@ const data = await response_from_init.json();
             //   displayTable:data['data'][0]['data'],
               tableDataState:newDataList,
               tableColumnState:'instanceDetailTable',
-              instanceDetailTableDataState:newDataList
-              
+              instanceDetailTableDataState:newDataList,
+              usageInstanceNumber:datalist.length.toString()
           });
         
           }
@@ -1756,7 +1757,8 @@ const data = await response_from_init.json();
             //   displayTable:data['data'][0]['data'],
               instanceBasicTableDataState:datalist,
               tableDataState:datalist,
-              tableColumnState:'instanceTable'
+              tableColumnState:'instanceTable',
+              usageInstanceNumber:data['data'][0]['data'].length.toString()
               
           });
          
@@ -2028,7 +2030,7 @@ deleteSelectedEC2=async(e,action)=>{
   await this.manageEC2(allids,allregions,action)
   // for (let i = 0; i < e.tableSelctedItem.length; i++) {   
   //   await this.deleteEC2(e.tableSelctedItem[i].instanceId,e.tableSelctedItem[i].region,action)
-
+  this.checkInstanceTablebyUser(e.userinfo.id)
   // }
   if (action=="start"){
         var Flag=true
@@ -2066,8 +2068,8 @@ deleteSelectedEC2=async(e,action)=>{
       //     console.log(check_reponse)
       //     }
     }
-  
   this.checkInstanceTablebyUser(e.userinfo.id)
+  
   this.setState({buttonclick_statusmanage:false})
 }
 
@@ -2473,6 +2475,8 @@ generateUUID=async(type)=>{
   const queryParameters = new URLSearchParams(window.location.search)
   const usertype = queryParameters.get("usertype")
   const user_id = queryParameters.get("username")
+  const apitoken=queryParameters.get("apitoken")
+  await this.setState({apitoken:apitoken})
   console.log("==============Get URL")
   console.log(usertype)
   // console.log(username)
@@ -3333,7 +3337,7 @@ LaunchApp() {
               <ComplexStatisticsCard
                 other={""}
                 other2={""}
-                title="Instance Usage / Instance Quota"
+                title="Instance Quota"
                 count={userinfo.other.instanceQuota.toString()}
                 percentage={{
                   color: "success",
@@ -3381,8 +3385,8 @@ LaunchApp() {
                 color="success"
                 other={""}
                 other2={""}
-                title="APP Numbers"
-                count="34k"
+                title="Instance Usage"
+                count={this.state.usageInstanceNumber}
                 percentage={{
                   color: "success",
                   amount: "",

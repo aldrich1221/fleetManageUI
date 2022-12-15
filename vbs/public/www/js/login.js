@@ -2,12 +2,12 @@
 // AWS.config.credentials = new AWS.CognitoIdentityCredentials({
 //   IdentityPoolId: '<IDENTITY_POOL_ID>'
 // });
-AWS.config.update(
-  {
-    accessKeyId: "AKIA4T2RLXBEA3M2SN4H",
-    secretAccessKey: "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",
-  }
-);
+// AWS.config.update(
+//   {
+//     accessKeyId: "AKIA4T2RLXBEA3M2SN4H",
+//     secretAccessKey: "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",
+//   }
+// );
 var lambda = new AWS.Lambda();
 
 const login = async()=> {
@@ -17,7 +17,7 @@ const login = async()=> {
   var password = document.getElementById('password');
   var type = document.getElementById('type');
 
-  result.innerHTML = 'Login...';
+  
 
   if (email.value == null || email.value == '') {
     result.innerHTML = 'Please specify your email address.';
@@ -33,14 +33,40 @@ const login = async()=> {
     const requestOptions = {
       method: 'GET',
       headers: { 
-        'Content-Type': 'application/json',
-        'userid':email.value,
-        "password": password.value
+        'Content-Type': 'application/json' ,
+       
       },
-     
+      
     };
 
-    window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
+   
+    var url="https://55mk0uwqc0.execute-api.us-east-1.amazonaws.com/prod/v1?userid="+email.value+"&password="+password.value
+
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          var response_from_init_split = data[0]["data"]["PreSigned"].split('?');
+          var apiToken=data[0]["data"]["apikey"]
+          var loginparamter=data[0]["data"]["login"]
+          var parameter=response_from_init_split[1]
+          if (loginparamter==true){
+            // window.open('../../index.html', '_self');
+                window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value+'&'+parameter+'&apitoken='+apiToken;
+            }
+            else {
+                        result.innerHTML = '<b>Not</b> logged in';
+            }
+        })
+
+    const response_from_init = await fetch(url,requestOptions)
+    const data = response_from_init.json();
+    console.log("=======response----------")
+    var response_from_init_split = data[0]["data"]["PreSigned"].split('?');
+    var loginparamter=data[0]["data"]["login"]
+    var parameter=response_from_init_split[1]
+    console.log(response_from_init)
+    // window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
 
 
     // var url="https://ibsh7lbab6.execute-api.us-east-1.amazonaws.com/prod/v1"
@@ -48,15 +74,14 @@ const login = async()=> {
     // const data = await response_from_init.json();
     // console.log("=======response from webAuth------------")
     // console.log(data)
-    // if (data.login==true){
+    if (loginparamter==true){
+    // window.open('../../index.html', '_self');
+        window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value+'&'+parameter;
+    }
+    else {
+                result.innerHTML = '<b>Not</b> logged in';
+    }
 
-
-    // // window.open('../../index.html', '_self');
-    //   window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value;
-    // }
-    // else {
-    //             result.innerHTML = '<b>Not</b> logged in';
-    //           }
     // fetch(url, requestOptions)
     //     .then(response => response.json())
     //     .then(data => {

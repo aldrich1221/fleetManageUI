@@ -433,8 +433,44 @@ export function Table({ columns, data,tableSelctedItem,getInstanceCallback}) {
               return (
                 <tr {...row.getRowProps()}>
                   {row.cells.map(cell => {
+                    var colorstate="black"
+                    var background="white"
                     console.log("Cell",cell)
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                    if (cell.column.id=="status"){
+                      if (cell.value=='running'){
+                        colorstate='green'
+                        // background='blue'
+                      }
+                      else if (cell.value=='stoppted'){
+                        colorstate='gray'
+                        // background='blue'
+                      }
+
+                    }
+                    else if(cell.column.id=="instanceStatus"){
+                      if (cell.value=='ok'){
+                        colorstate='green'
+                        // background='blue'
+                      }
+                      else{
+                        colorstate='gray'
+                        // background='blue'
+                      }
+                    } 
+                    else if(cell.column.id=="systemStatus"){
+                      if (cell.value=='ok'){
+                        colorstate='green'
+                        // background='blue'
+                      }
+                      else{
+                        colorstate='gray'
+                        // background='blue'
+                      }
+                    } 
+
+
+
+                    return <td style={{color:colorstate}} {...cell.getCellProps()}>{cell.render('Cell')}</td>
                   })}
                 </tr>
               )
