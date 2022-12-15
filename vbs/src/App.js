@@ -61,7 +61,7 @@ import ComplexStatisticsCard from "./examples/Cards/StatisticsCards/ComplexStati
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AWS from 'aws-sdk';
 import { touchRippleClasses } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup  } from 'react-leaflet'
+// import { MapContainer, TileLayer, Marker, Popup  } from 'react-leaflet'
 import {Chart} from './chart.js'
 
 // import {Map} from './googlemap.ts';
@@ -942,8 +942,11 @@ httpspingtest=async (data) =>{
      
     pingResult.push({'serverIP':serverIP,'serverID':serverID,'pingTime': avg_time})
     items2.push({itemString:" " , id: serverZone, city: serverCity,country:serverCountry,result: avg_time});   
-      
+    data[j].latency=(avg_time).toString()
+    data[j].user_id=this.state.userinfo.id
+    data[j].userCity=this.state.userinfo.city
     }
+  this.addLatencyDB(data)
   items2.sort((a, b) => (a.result > b.result) ? 1 : -1)
   console.log("=========completed ping=====",items2)
   this.setState({ 
@@ -1868,7 +1871,10 @@ const data = await response_from_init.json();
       
       //   displayTable:data['data'][0]['data'],
         tableDataState:datalist,
-        tableColumnState:'latencyTable'
+        tableColumnState:'latencyTable',
+
+     
+        latencyTableDataState:datalist
         
     });
     return datalist
@@ -2008,10 +2014,11 @@ checkLatencyTable(userid){
   })
   
 }
-latencyResult(e){
+latencyResult=async(e)=>{
  
   // this.checkLatencyTablebyUser(e.userinfo.id)
-  this.checkLatencyTablebyUser("developer-123456789")
+  await this.checkLatencyTablebyCity(e,e.userinfo.id)
+  // this.checkLatencyTablebyUser("developer-123456789")
   
 }
 deleteSelectedEC2=async(e,action)=>{
@@ -2593,7 +2600,7 @@ findBestRegion_v2=async (e) =>{
     ip:null
     
   }
-  const latencydatalist=await this.checkLatencyTablebyCity(e)
+  const latencydatalist=await this.checkLatencyTablebyCity(e,e.userinfo.id)
   
   // const latencydatalist=[]
   console.log('latencydatalist')
@@ -2601,13 +2608,13 @@ findBestRegion_v2=async (e) =>{
   var itemString 
   var defaultzone
   var items=[]
-  
+  latencydatalist.sort((a, b) => (a.latency> b.latency) ? 1 : -1)
   if (latencydatalist.length!=0){
     this.setState({processbarStatus:'50'})
                 for (let i = 0; i <latencydatalist.length; i++) {  
                  
                   if (i==0){
-                    itemString="(Recommended): "
+                    itemString=" "
                     defaultzone=latencydatalist[i].zone
                   }
                   else{
@@ -2618,9 +2625,9 @@ findBestRegion_v2=async (e) =>{
 
                       itemString:itemString , 
                       id: latencydatalist[i].zone, 
-                      city: latencydatalist[i].city,
-                      country:latencydatalist[i].country,
-                      result:latencydatalist[i].latency,});   
+                      city: latencydatalist[i].instanceCity,
+                      country:latencydatalist[i].instanceCountry,
+                      result:parseFloat(latencydatalist[i].latency),});   
               }
 
               items.sort((a, b) => (a.result > b.result) ? 1 : -1)
@@ -2642,30 +2649,30 @@ findBestRegion_v2=async (e) =>{
       // this.setState({buttonclick_findbestregion:false})
 
       var defulatRegionInfo=[
-        {'zone':'us-east-1','instanceIP':'ec2.us-east-1.amazonaws.com/ping','instanceid': 'ec2.us-east-1.amazonaws.com/ping','instanceCity':'N. Virginia','instanceCountry':'US'},
+        {'zone':'us-east-1','region':'us-east-1','instanceIP':'ec2.us-east-1.amazonaws.com/ping','instanceid': 'us-east-1-'+uuid(),'instanceCity':'N. Virginia','instanceCountry':'US'},
         // {'zone':'us-east-2','instanceIP':'ec2.us-east-2.amazonaws.com/ping','instanceid': 'ec2.us-east-2.amazonaws.com/ping','instanceCity':'Ohio','instanceCountry':'US'},
-        {'zone':'us-west-1','instanceIP':'ec2.us-west-1.amazonaws.com/ping','instanceid': 'ec2.us-west-1.amazonaws.com/ping','instanceCity':'N. California','instanceCountry':'US'},
+        {'zone':'us-west-1','region':'us-west-1','instanceIP':'ec2.us-west-1.amazonaws.com/ping','instanceid': 'us-west-1-'+uuid(),'instanceCity':'N. California','instanceCountry':'US'},
         // {'zone':'us-west-2','instanceIP':'ec2.us-west-2.amazonaws.com/ping','instanceid': 'ec2.us-west-2.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ca-central-1','instanceIP':'ec2.ca-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-        {'zone':'eu-north-1','instanceIP':'ec2.eu-north-1.amazonaws.com/ping','instanceid': 'ec2.eu-north-1.amazonaws.com/ping','instanceCity':'Stockholm','instanceCountry':'Sweden'},
+        {'zone':'eu-north-1','region':'eu-north-1','instanceIP':'ec2.eu-north-1.amazonaws.com/ping','instanceid': 'eu-north-1-'+uuid(),'instanceCity':'Stockholm','instanceCountry':'Sweden'},
         // {'zone':'eu-west-3','instanceIP':'ec2.eu-west-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'eu-west-2','instanceIP':'ec2.eu-west-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'eu-west-1','instanceIP':'ec2.eu-west-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'eu-central-1','instanceIP':'ec2.eu-central-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'eu-south-1','instanceIP':'ec2.eu-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ap-south-1','instanceIP':'ec2.ap-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-        {'zone':'ap-northeast-1','instanceIP':'ec2.ap-northeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'ap-northeast-1','region':'ap-northeast-1','instanceIP':'ec2.ap-northeast-1.amazonaws.com/ping','instanceid': 'ap-northeast-1-'+uuid(),'instanceCity':'Tokyo','instanceCountry':'Japan'},
         // {'zone':'ap-northeast-2','instanceIP':'ec2.ap-northeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ap-northeast-3','instanceIP':'ec2.ap-northeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ap-southeast-1','instanceIP':'ec2.ap-southeast-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ap-southeast-2','instanceIP':'ec2.ap-southeast-2.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'ap-southeast-3','instanceIP':'ec2.ap-southeast-3.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-        {'zone':'ap-east-1','instanceIP':'ec2.ap-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-        {'zone':'sa-east-1','instanceIP':'ec2.sa-east-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
+        {'zone':'ap-east-1','region':'ap-east-1','instanceIP':'ec2.ap-east-1.amazonaws.com/ping','instanceid': 'ap-east-1-'+uuid(),'instanceCity':'HongKong','instanceCountry':'China'},
+        {'zone':'sa-east-1','region':'sa-east-1','instanceIP':'ec2.sa-east-1.amazonaws.com/ping','instanceid': 'sa-east-1-'+uuid(),'instanceCity':'São Paulo','instanceCountry':'Brazil'},
         // {'zone':'cn-north-1','instanceIP':'ec2.cn-north-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'cn-northwest-1','instanceIP':'ec2.cn-northwest-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
         // {'zone':'me-south-1','instanceIP':'ec2.me-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'},
-        {'zone':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'ec2.ca-central-1.amazonaws.com/ping','instanceCity':'None','instanceCountry':'None'}
+        {'zone':'af-south-1','region':'af-south-1','instanceIP':'ec2.af-south-1.amazonaws.com/ping','instanceid': 'af-south-1-'+uuid(),'instanceCity':'Cape Town','instanceCountry':'South Africa'}
       ]
       this.setState({processbarStatus:'50'})
       this.httpspingtest(defulatRegionInfo)

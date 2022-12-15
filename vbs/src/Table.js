@@ -203,26 +203,26 @@ export const tableColumnConfig={
         {
           Header: 'User Information',
           columns: [
-            {
-              Header: 'User ID',
-              accessor: 'user_id',
-            },
+            // {
+            //   Header: 'User ID',
+            //   accessor: 'user_id',
+            // },
             {
               Header: 'userCity',
               accessor: 'userCity',
             },
-            {
-              Header: 'userIP',
-              accessor: 'userIP',
-            },
-            {
-              Header: 'userLatitude',
-              accessor: 'userLatitude',
-            },
-            {
-              Header: 'userLongitude',
-              accessor: 'userLongitude',
-            },
+            // {
+            //   Header: 'userIP',
+            //   accessor: 'userIP',
+            // },
+            // {
+            //   Header: 'userLatitude',
+            //   accessor: 'userLatitude',
+            // },
+            // {
+            //   Header: 'userLongitude',
+            //   accessor: 'userLongitude',
+            // },
             
           
           ],
@@ -230,14 +230,14 @@ export const tableColumnConfig={
         {
           Header: 'Instance Information',
           columns: [
-            {
-              Header: 'instanceid',
-              accessor: 'instanceid',
-            },
-            {
-              Header: 'instanceIP',
-              accessor: 'instanceIP',
-            },
+            // {
+            //   Header: 'instanceid',
+            //   accessor: 'instanceid',
+            // },
+            // {
+            //   Header: 'instanceIP',
+            //   accessor: 'instanceIP',
+            // },
             {
               Header: 'instanceCity',
               accessor: 'instanceCity',

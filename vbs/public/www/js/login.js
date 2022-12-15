@@ -53,6 +53,7 @@ const login = async()=> {
           if (loginparamter==true){
             // window.open('../../index.html', '_self');
                 window.location.href ='../../index.html?username='+email.value+'&usertype='+type.value+'&'+parameter+'&apitoken='+apiToken;
+                // window.location.href =data[0]["data"]["PreSigned"]+'&username='+email.value+'&usertype='+type.value+'&apitoken='+apiToken;
             }
             else {
                         result.innerHTML = '<b>Not</b> logged in';
