@@ -1810,14 +1810,14 @@ const data = await response_from_init.json();
   }
 
 
-  checkLatencyTablebyCity=async (e,userid)=>{
-    const ipUrl='https://ip.nf/me.json'
+  checkLatencyTablebyCity=async (e,userid,city)=>{
+    // const ipUrl='https://ip.nf/me.json'
  
-    const response_from_userip = await fetch(ipUrl,{method:"GET"})
-    const data_ip = await response_from_userip.json();
+    // const response_from_userip = await fetch(ipUrl,{method:"GET"})
+    // const data_ip = await response_from_userip.json();
     
     
-    var city=data_ip.ip.city
+    // var city=data_ip.ip.city
 
     // var city=e.userinfo.city
     // var userid=e.userinfo.id
@@ -2017,7 +2017,7 @@ checkLatencyTable(userid){
 latencyResult=async(e)=>{
  
   // this.checkLatencyTablebyUser(e.userinfo.id)
-  await this.checkLatencyTablebyCity(e,e.userinfo.id)
+  await this.checkLatencyTablebyCity(e,e.userinfo.id,e.userinfo.city)
   // this.checkLatencyTablebyUser("developer-123456789")
   
 }
@@ -2326,6 +2326,7 @@ createLatencyTestInstance=async (e) =>{
 
 }
 
+
 getUserInfo=async(userid,type)=>{
   const ipUrl='https://ip.nf/me.json'
   var ip=null
@@ -2337,17 +2338,28 @@ getUserInfo=async(userid,type)=>{
   var city=null
   var userinfo=this.state.userinfo
 
-  const response_from_userip = await fetch(ipUrl,{method:"GET"})
-  const data_ip = await response_from_userip.json();
+  var url=APIs['AnalysisIP']+'?userid='+userid
+  const response_from_analysisip = await fetch(url,{method:"GET"})
+  const data_ip = await response_from_analysisip.json();
+  let source_ip=data_ip['data'][0]["source_ip"]
+  let source_city=data_ip['data'][0]["source_city"]
+  latitude=data_ip['data'][0]["latitude"]
+  longitude=data_ip['data'][0]["longitude"]
+
+  // await this.setState({
+  //   userinfo:{id:userid,city:source_city,ip:source_ip,other:e.userinfo.other}
+  // })
+  // const response_from_userip = await fetch(ipUrl,{method:"GET"})
+  // const data_ip = await response_from_userip.json();
   console.log(data_ip)
-  var country=data_ip.ip.country
-  var ip=data_ip.ip.ip
-  var latitude=data_ip.ip.latitude
-  var longitude=data_ip.ip.longitude
-  var city=data_ip.ip.city
-  this.setState({
-    userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":userinfo.other}
-  })
+  
+  var ip=source_ip
+  // var latitude=latitude
+  // var longitude=longitude
+  var city=source_city
+  // await this.setState({
+  //   userinfo:{id:userid,city:city,ip:ip,name:name,type:type,latitude:latitude,longitude:longitude,"other":userinfo.other}
+  // })
   // fetch(ipUrl,{method:"GET"})
   // .then(res => res.json())
   // .then(data => {
@@ -2385,7 +2397,7 @@ getUserInfo=async(userid,type)=>{
     var floatValue = +(a);
       
     // Return float value
-    return floatValue;
+      return floatValue;
       }
   console.log(instanceQuota)
   console.log(costarray)
@@ -2394,6 +2406,7 @@ getUserInfo=async(userid,type)=>{
       weeklycostlabels.push(costarray[i]["TimePeriod"]["End"])
     }
     var sum = weeklycosts.reduce((a, b) => a + b, 0);
+
     var otherinfo={
       "WeeklyCostSum":sum,
       "DailyCostList":weeklycosts,
@@ -2402,7 +2415,8 @@ getUserInfo=async(userid,type)=>{
       "useremail":useremail,
       "userAMI":userAMI
     }
-    this.setState({
+    var returnUserInfo={id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo}
+    await this.setState({
       userinfo:{id:userid,city:city,ip:ip,name:username,type:type,latitude:latitude,longitude:longitude,"other":otherinfo},
       chartdata:weeklycosts,
       chartlabel:weeklycostlabels
@@ -2469,7 +2483,9 @@ getUserInfo=async(userid,type)=>{
   this.checkLatencyTablebyUser(userid)
   this.checkCostUsage(this.state)
 
-
+  console.log("=============")
+  console.log(returnUserInfo)
+  return returnUserInfo
 
 
 }
@@ -2483,12 +2499,15 @@ generateUUID=async(type)=>{
   const usertype = queryParameters.get("usertype")
   const user_id = queryParameters.get("username")
   const apitoken=queryParameters.get("apitoken")
-  await this.setState({apitoken:apitoken})
+  var userinfo={ip:null,city:null,id:user_id,name:null,type:usertype,other:{'WeeklyCostSum':'','DailyCostList':[],'instanceQuota':'','useremail':'','userAMI':''}}
+  // var userinfo={"id":user_id,"type":usertype,"useremail":""}
+  await this.setState({apitoken:apitoken,userinfo:userinfo})
+  
   console.log("==============Get URL")
-  console.log(usertype)
+  console.log(this.state.userinfo)
   // console.log(username)
   type=usertype
- 
+  
   userid=user_id
   
   // if (type=='user'){
@@ -2504,8 +2523,8 @@ generateUUID=async(type)=>{
   
 
   // }
-  await this.getUserInfo(userid,type)
-  await this.findBestRegion_v2(this.state)
+  const returnUserInfo=await this.getUserInfo(userid,type)
+  await this.findBestRegion_v2(this.state,returnUserInfo)
  
   console.log(this.state.userinfo)
 
@@ -2590,17 +2609,30 @@ defaultRegionSelect=async (e) =>{
   })
 }
 
-findBestRegion_v2=async (e) =>{
+findBestRegion_v2=async (e,UserInfo) =>{
   this.setState({buttonclick_findbestregion:true,processbarStatus:'10'})
 
+
+  
+  // var url=APIs['AnalysisIP']+'?userid='+e.userinfo.id
+  // const response_from_analysisip = await fetch(url,{method:"GET"})
+  // const data_ip = await response_from_analysisip.json();
+  // let source_ip=data_ip['data'][0]["source_ip"]
+  // let source_city=data_ip['data'][0]["source_city"]
+
+  // await this.setState({
+  //   userinfo:{id:e.userinfo.id,city:source_city,ip:source_ip,other:e.userinfo.other}
+  // })
+
   var user_id=null
-  var userinfo={
-    id:e.userinfo.id,
-    city:null,
-    ip:null
+  // var userinfo={id:e.userinfo.id,city:source_city,ip:source_ip,other:e.userinfo.other}
+  // var userinfo={
+  //   id:e.userinfo.id,
+  //   city:null,
+  //   ip:null
     
-  }
-  const latencydatalist=await this.checkLatencyTablebyCity(e,e.userinfo.id)
+  // }
+  const latencydatalist=await this.checkLatencyTablebyCity(e,UserInfo.id,UserInfo.city)
   
   // const latencydatalist=[]
   console.log('latencydatalist')
@@ -2608,18 +2640,20 @@ findBestRegion_v2=async (e) =>{
   var itemString 
   var defaultzone
   var items=[]
-  latencydatalist.sort((a, b) => (a.latency> b.latency) ? 1 : -1)
+  // latencydatalist.sort((a, b) => (a.latency> b.latency) ? 1 : -1)
   if (latencydatalist.length!=0){
     this.setState({processbarStatus:'50'})
                 for (let i = 0; i <latencydatalist.length; i++) {  
                  
-                  if (i==0){
-                    itemString=" "
-                    defaultzone=latencydatalist[i].zone
-                  }
-                  else{
-                    itemString=" "
-                  }
+                  // if (i==0){
+                  //   itemString=" "
+                  //   defaultzone=latencydatalist[i].zone
+                  // }
+                  // else{
+                  //   itemString=" "
+                  // }
+
+
                     items.push({
 
 
@@ -2631,6 +2665,7 @@ findBestRegion_v2=async (e) =>{
               }
 
               items.sort((a, b) => (a.result > b.result) ? 1 : -1)
+              defaultzone=items[0].zone
               console.log("=========completed ping=====",items)
               this.setState({
                 // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
