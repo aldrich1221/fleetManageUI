@@ -70,8 +70,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const axios = require('axios');
 const APIs={
-  'CreateEC2':'https://i5b137gkg6.execute-api.us-east-1.amazonaws.com/prod/v1',
-  'DeleteEC2':'https://jgw43jh500.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'CreateEC2':'https://esoe54yrr1.execute-api.us-east-1.amazonaws.com/prod/v1',
+  'DeleteEC2':'https://kglm6l691f.execute-api.us-east-1.amazonaws.com/prod/v1',
   'QueryDB':' https://w8mk0bw6t9.execute-api.us-east-1.amazonaws.com/prod/v1',
   'AnalysisIP':'https://b0diuhkc9f.execute-api.us-east-1.amazonaws.com/prod/v1',
   'CostUsage':'https://vgwh8al5v1.execute-api.us-east-1.amazonaws.com/prod/v1',
@@ -2665,7 +2665,7 @@ findBestRegion_v2=async (e,UserInfo) =>{
               }
 
               items.sort((a, b) => (a.result > b.result) ? 1 : -1)
-              defaultzone=items[0].zone
+              defaultzone=items[0].id
               console.log("=========completed ping=====",items)
               this.setState({
                 // userinfo: {'ip':source_ip,'city':source_city,'id':e.userinfo.id,"other":e.userinfo.other},
